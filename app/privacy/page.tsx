@@ -3,41 +3,14 @@ import { Card, CardContent } from "@/components/ui/card"
 import { ArrowRight, Mail, Twitter } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
+import { Footer } from "@/components/ui/footer"
+import { Header } from "@/components/ui/header"
 
 export default function PrivacyPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="border-b border-gray-100 bg-white sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-0 flex items-center justify-between h-16">
-    <Link href="/" className="flex items-center">
-      <Image
-        src="/images/medici-logo.svg"
-        alt="Medici"
-        width={200}
-        height={64}
-        className="h-14 w-auto"
-      />
-    </Link>
-          <nav className="hidden md:flex items-center gap-8">
-            <Link href="/about" className="text-gray-600 hover:text-gray-900 transition-colors">
-              About
-            </Link>
-            <Link href="/how-it-works" className="text-gray-600 hover:text-gray-900 transition-colors">
-              How It Works
-            </Link>
-            <Link href="/faq" className="text-gray-600 hover:text-gray-900 transition-colors">
-              FAQ
-            </Link>
-            <Link href="/privacy" className="text-gray-900 font-medium">
-              Privacy Policy
-            </Link>
-            <Button asChild variant="outline" className="rounded-full border-gray-300 hover:bg-gray-50">
-              <Link href="/login">Sign In</Link>
-            </Button>
-          </nav>
-        </div>
-      </header>
+      <Header />
 
       <div className="container mx-auto px-6 py-20">
   <div className="max-w-4xl mx-auto">
@@ -390,80 +363,7 @@ export default function PrivacyPage() {
 
 
       {/* Footer */}
-      <footer className="border-t border-gray-100 py-12">
-        <div className="container mx-auto px-6">
-          <div className="grid md:grid-cols-4 gap-8">
-           <div>
-  <Image
-    src="/images/medici-logo.svg"
-    alt="Medici"
-    width={220}
-    height={70}
-    className="h-16 w-auto mb-2" 
-  />
-              <p className="text-gray-600 leading-relaxed">
-                A peer-to-peer platform where donors pick verified students, choose any amount and fund their education securely and directly on the blockchain
-              </p>
-            </div>
-            <div>
-              <h4 className="font-medium mb-4">Platform</h4>
-              <ul className="space-y-3 text-gray-600">
-                <li>
-                  <Link href="/how-it-works" className="hover:text-gray-900 transition-colors">
-                    How It Works
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/browse" className="hover:text-gray-900 transition-colors">
-                    Browse Students
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/register" className="hover:text-gray-900 transition-colors">
-                    Apply for Funding
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-medium mb-4">Support</h4>
-              <ul className="space-y-3 text-gray-600">
-                <li>
-                  <Link href="/faq" className="hover:text-gray-900 transition-colors">
-                    FAQ
-                  </Link>
-                </li>
-                <li className="flex items-center gap-2">
-  <Mail className="h-4 w-4 text-gray-600" />
-  <a href="mailto:rd@stableresearch.xyz" className="hover:text-gray-900 transition-colors">
-    Email
-  </a>
-</li>
-<li className="flex items-center gap-2">
-  <Twitter className="h-4 w-4 text-gray-600" />
-  <a href="https://x.com/Medici_ac" target="_blank" rel="noopener noreferrer" className="hover:text-gray-900 transition-colors">
-    Twitter
-  </a>
-</li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-medium mb-4">Legal</h4>
-              <ul className="space-y-3 text-gray-600">
-                <li>
-                  <Link href="/privacy" className="hover:text-gray-900 transition-colors">
-                    Privacy Policy
-                  </Link>
-                </li>
-
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-gray-100 mt-12 pt-8 text-center text-gray-600">
-            <p>&copy; 2025 Medici. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }
