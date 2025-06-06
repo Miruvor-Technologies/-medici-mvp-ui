@@ -7,6 +7,10 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, Wallet, Shield, Zap, Loader2 } from "lucide-react"
+import { getStudentById } from "@/utils/sample-data"
+import Link from "next/link"
+import Image from "next/image"
+import { Footer } from "@/components/ui/footer"
 
 // Extend Window interface for MetaMask
 declare global {
@@ -18,24 +22,30 @@ declare global {
   }
 }
 
-// Mock student data
-const student = {
-  id: 1,
-  name: "Maria Rodriguez",
-  photo: "/images/maria-rodriguez.png",
-  university: "MIT",
-  program: "Computer Science",
-  goal: 50000,
-  funded: 32000,
-  remaining: 18000,
-}
+export default function PledgePage({ params }: { params: { id: string } }) {
+  const studentId = parseInt(params.id)
+  const student = getStudentById(studentId)
 
-export default function PledgePage() {
   const [isConnecting, setIsConnecting] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
   const [pledgeAmount, setPledgeAmount] = useState("")
   const [message, setMessage] = useState("")
   const [isClient, setIsClient] = useState(false)
+
+  // If no student is found, show error state
+  if (!student) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-medium text-gray-900 mb-2">Student Not Found</h1>
+          <p className="text-gray-600 mb-4">The student profile you're looking for doesn't exist.</p>
+          <Button asChild variant="outline" size="lg">
+            <Link href="/browse">Back to Browse</Link>
+          </Button>
+        </div>
+      </div>
+    )
+  }
 
   // Ensure we're on the client side before accessing window
   useEffect(() => {
@@ -121,10 +131,16 @@ export default function PledgePage() {
     <div className="min-h-screen bg-white">
       {/* Header */}
       <header className="border-b border-gray-100 bg-white sticky top-0 z-50">
-       <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-          <a href="/" className="flex items-center">
-            <img src="/images/medici-logo.svg" alt="Medici" width={120} height={40} className="h-8 w-auto" />
-          </a>
+             <div className="container mx-auto px-6 py-0 flex items-center justify-between h-16">
+              <Link href="/" className="flex items-center">
+                <Image
+                  src="/images/medici-logo.svg"
+                  alt="Medici"
+                  width={200}
+                  height={64}
+                  className="h-14 w-auto"
+                />
+              </Link>
           <Button variant="outline" className="rounded-full border-gray-300 hover:bg-gray-50">
             Sign In
           </Button>
@@ -145,12 +161,12 @@ export default function PledgePage() {
           Back to Profile
         </button>
 
-        {/* Student Summary */}
+        {/* Student Summary - Updated to use dynamic data */}
         <Card className="mb-8 border-gray-200">
           <CardContent className="p-6">
             <div className="flex items-center gap-6">
-              <img
-                src={student.photo || "/placeholder.svg"}
+              <Image
+                src={student.photo}
                 alt={student.name}
                 width={80}
                 height={80}
@@ -166,7 +182,7 @@ export default function PledgePage() {
                     ${student.funded.toLocaleString()} raised of ${student.goal.toLocaleString()}
                   </span>
                   <Badge variant="secondary" className="rounded-full bg-blue-50 text-blue-700 border-blue-200">
-                    ${student.remaining.toLocaleString()} remaining
+                    ${(student.goal - student.funded).toLocaleString()} remaining
                   </Badge>
                 </div>
               </div>
@@ -325,81 +341,7 @@ export default function PledgePage() {
       </div>
 
       {/* Footer */}
-      <footer className="border-t border-gray-100 py-12">
-   <div className="container mx-auto px-6">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <img src="/images/medici-logo.svg" alt="Medici" width={120} height={40} className="h-8 w-auto mb-4" />
-              <p className="text-gray-600 leading-relaxed">
-                Democratizing education funding through blockchain technology.
-              </p>
-            </div>
-            <div>
-              <h4 className="font-medium mb-4">Platform</h4>
-              <ul className="space-y-3 text-gray-600">
-                <li>
-                  <a href="/how-it-works" className="hover:text-gray-900 transition-colors">
-                    How It Works
-                  </a>
-                </li>
-                <li>
-                  <a href="/browse" className="hover:text-gray-900 transition-colors">
-                    Browse Students
-                  </a>
-                </li>
-                <li>
-                  <a href="/register" className="hover:text-gray-900 transition-colors">
-                    Apply for Funding
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-medium mb-4">Support</h4>
-              <ul className="space-y-3 text-gray-600">
-                <li>
-                  <a href="/faq" className="hover:text-gray-900 transition-colors">
-                    FAQ
-                  </a>
-                </li>
-                <li>
-                  <a href="/contact" className="hover:text-gray-900 transition-colors">
-                    Contact
-                  </a>
-                </li>
-                <li>
-                  <a href="/help" className="hover:text-gray-900 transition-colors">
-                    Help Center
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-medium mb-4">Legal</h4>
-              <ul className="space-y-3 text-gray-600">
-                <li>
-                  <a href="/privacy" className="hover:text-gray-900 transition-colors">
-                    Privacy Policy
-                  </a>
-                </li>
-                <li>
-                  <a href="/terms" className="hover:text-gray-900 transition-colors">
-                    Terms of Service
-                  </a>
-                </li>
-                <li>
-                  <a href="/security" className="hover:text-gray-900 transition-colors">
-                    Security
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-gray-100 mt-12 pt-8 text-center text-gray-600">
-            <p>&copy; 2024 Medici. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      <Footer/>
     </div>
   )
 }
