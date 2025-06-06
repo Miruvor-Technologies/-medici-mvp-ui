@@ -1,11 +1,22 @@
+"use client"
+
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Wallet, Shield, Zap } from "lucide-react"
-import Link from "next/link"
-import Image from "next/image"
+import { ArrowLeft, Wallet, Shield, Zap, Loader2 } from "lucide-react"
+
+// Extend Window interface for MetaMask
+declare global {
+  interface Window {
+    ethereum?: {
+      request: (args: { method: string; params?: any[] }) => Promise<any>
+      isMetaMask?: boolean
+    }
+  }
+}
 
 // Mock student data
 const student = {
@@ -20,40 +31,130 @@ const student = {
 }
 
 export default function PledgePage() {
+  const [isConnecting, setIsConnecting] = useState(false)
+  const [isProcessing, setIsProcessing] = useState(false)
+  const [pledgeAmount, setPledgeAmount] = useState("")
+  const [message, setMessage] = useState("")
+  const [isClient, setIsClient] = useState(false)
+
+  // Ensure we're on the client side before accessing window
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  const handleQuickAmount = (amount: number) => {
+    setPledgeAmount(amount.toString())
+  }
+
+  const connectWalletAndFund = async () => {
+    // Only proceed if we're on the client side
+    if (!isClient) {
+      return
+    }
+
+    try {
+      setIsConnecting(true)
+      
+      // Check if MetaMask is installed
+      if (typeof window === 'undefined' || typeof window.ethereum === 'undefined') {
+        alert('MetaMask is not installed. Please install MetaMask to continue.')
+        return
+      }
+
+      // Request account access
+      const accounts = await window.ethereum.request({
+        method: 'eth_requestAccounts'
+      })
+
+      if (accounts.length === 0) {
+        alert('No accounts found. Please unlock MetaMask.')
+        return
+      }
+
+      const account = accounts[0]
+      console.log('Connected account:', account)
+
+      setIsConnecting(false)
+      setIsProcessing(true)
+
+      // Simplified mock transaction - just send a small amount of ETH
+      const transactionParams = {
+        to: '0x742d35Cc6634C0532925a3b8D49EC0dC5E123456', // Mock recipient address
+        from: account,
+        value: '0x5AF3107A4000', // 0.0001 ETH in wei (hex)
+        gas: '0x5208', // 21000 gas limit
+      }
+
+      // Request transaction signature
+      const txHash = await window.ethereum.request({
+        method: 'eth_sendTransaction',
+        params: [transactionParams],
+      })
+
+      console.log('Transaction hash:', txHash)
+
+      // Wait for 3 seconds to simulate transaction processing
+      await new Promise(resolve => setTimeout(resolve, 3000))
+
+      // Redirect to success page (only on client side)
+      if (typeof window !== 'undefined') {
+        window.location.href = '/success'
+      }
+
+    } catch (error: any) {
+      console.error('Wallet connection or transaction failed:', error)
+      
+      if (error.code === 4001) {
+        alert('Transaction was rejected by user.')
+      } else if (error.code === -32602) {
+        alert('Invalid transaction parameters.')
+      } else {
+        alert('An error occurred. Please try again.')
+      }
+    } finally {
+      setIsConnecting(false)
+      setIsProcessing(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
       <header className="border-b border-gray-100 bg-white sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center">
-            <Image src="/images/medici-logo.svg" alt="Medici" width={120} height={40} className="h-8 w-auto" />
-          </Link>
-          <Button asChild variant="outline" className="rounded-full border-gray-300 hover:bg-gray-50">
-            <Link href="/login">Sign In</Link>
+       <div className="container mx-auto px-6 py-4 flex items-center justify-between">
+          <a href="/" className="flex items-center">
+            <img src="/images/medici-logo.svg" alt="Medici" width={120} height={40} className="h-8 w-auto" />
+          </a>
+          <Button variant="outline" className="rounded-full border-gray-300 hover:bg-gray-50">
+            Sign In
           </Button>
         </div>
       </header>
 
       <div className="container mx-auto px-6 py-12 max-w-2xl">
         {/* Back Button */}
-        <Link
-          href={`/student/${student.id}`}
+        <button
+          onClick={() => {
+            if (typeof window !== 'undefined') {
+              window.history.back()
+            }
+          }}
           className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 mb-8 transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Profile
-        </Link>
+        </button>
 
         {/* Student Summary */}
         <Card className="mb-8 border-gray-200">
           <CardContent className="p-6">
             <div className="flex items-center gap-6">
-              <Image
+              <img
                 src={student.photo || "/placeholder.svg"}
                 alt={student.name}
                 width={80}
                 height={80}
-                className="rounded-full object-cover"
+                className="rounded-full object-cover w-20 h-20"
               />
               <div>
                 <h2 className="text-2xl font-light">{student.name}</h2>
@@ -88,6 +189,8 @@ export default function PledgePage() {
                 <Input
                   type="number"
                   placeholder="0.00"
+                  value={pledgeAmount}
+                  onChange={(e) => setPledgeAmount(e.target.value)}
                   className="pl-8 text-lg h-14 rounded-full border-gray-300"
                   min="1"
                   step="0.01"
@@ -101,7 +204,12 @@ export default function PledgePage() {
               <label className="text-sm font-medium mb-3 block">Quick amounts</label>
               <div className="grid grid-cols-4 gap-3">
                 {[25, 50, 100, 250].map((amount) => (
-                  <Button key={amount} variant="outline" className="h-12 rounded-full border-gray-300 hover:bg-gray-50">
+                  <Button 
+                    key={amount} 
+                    variant="outline" 
+                    className="h-12 rounded-full border-gray-300 hover:bg-gray-50"
+                    onClick={() => handleQuickAmount(amount)}
+                  >
                     ${amount}
                   </Button>
                 ))}
@@ -113,6 +221,8 @@ export default function PledgePage() {
               <label className="text-sm font-medium mb-3 block">Message for {student.name} (Optional)</label>
               <Textarea
                 placeholder="Write an encouraging message..."
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
                 className="min-h-[100px] border-gray-300 rounded-lg"
               />
             </div>
@@ -142,13 +252,26 @@ export default function PledgePage() {
             {/* Fund Button */}
             <Button
               size="lg"
-              className="w-full h-14 text-lg rounded-full bg-blue-600 hover:bg-blue-700 text-white"
-              asChild
+              className="w-full h-14 text-lg rounded-full bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
+              onClick={connectWalletAndFund}
+              disabled={isConnecting || isProcessing || !pledgeAmount || parseFloat(pledgeAmount) < 1}
             >
-              <Link href="/success">
-                <Wallet className="mr-2 h-5 w-5" />
-                Connect Wallet & Fund
-              </Link>
+              {isConnecting ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Connecting Wallet...
+                </>
+              ) : isProcessing ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Processing Transaction...
+                </>
+              ) : (
+                <>
+                  <Wallet className="mr-2 h-5 w-5" />
+                  Connect Wallet & Fund
+                </>
+              )}
             </Button>
 
             <p className="text-xs text-gray-500 text-center leading-relaxed">
@@ -203,10 +326,10 @@ export default function PledgePage() {
 
       {/* Footer */}
       <footer className="border-t border-gray-100 py-12">
-        <div className="container mx-auto px-6">
+   <div className="container mx-auto px-6">
           <div className="grid md:grid-cols-4 gap-8">
             <div>
-              <Image src="/images/medici-logo.svg" alt="Medici" width={120} height={40} className="h-8 w-auto mb-4" />
+              <img src="/images/medici-logo.svg" alt="Medici" width={120} height={40} className="h-8 w-auto mb-4" />
               <p className="text-gray-600 leading-relaxed">
                 Democratizing education funding through blockchain technology.
               </p>
@@ -215,19 +338,19 @@ export default function PledgePage() {
               <h4 className="font-medium mb-4">Platform</h4>
               <ul className="space-y-3 text-gray-600">
                 <li>
-                  <Link href="/how-it-works" className="hover:text-gray-900 transition-colors">
+                  <a href="/how-it-works" className="hover:text-gray-900 transition-colors">
                     How It Works
-                  </Link>
+                  </a>
                 </li>
                 <li>
-                  <Link href="/browse" className="hover:text-gray-900 transition-colors">
+                  <a href="/browse" className="hover:text-gray-900 transition-colors">
                     Browse Students
-                  </Link>
+                  </a>
                 </li>
                 <li>
-                  <Link href="/register" className="hover:text-gray-900 transition-colors">
+                  <a href="/register" className="hover:text-gray-900 transition-colors">
                     Apply for Funding
-                  </Link>
+                  </a>
                 </li>
               </ul>
             </div>
@@ -235,19 +358,19 @@ export default function PledgePage() {
               <h4 className="font-medium mb-4">Support</h4>
               <ul className="space-y-3 text-gray-600">
                 <li>
-                  <Link href="/faq" className="hover:text-gray-900 transition-colors">
+                  <a href="/faq" className="hover:text-gray-900 transition-colors">
                     FAQ
-                  </Link>
+                  </a>
                 </li>
                 <li>
-                  <Link href="/contact" className="hover:text-gray-900 transition-colors">
+                  <a href="/contact" className="hover:text-gray-900 transition-colors">
                     Contact
-                  </Link>
+                  </a>
                 </li>
                 <li>
-                  <Link href="/help" className="hover:text-gray-900 transition-colors">
+                  <a href="/help" className="hover:text-gray-900 transition-colors">
                     Help Center
-                  </Link>
+                  </a>
                 </li>
               </ul>
             </div>
@@ -255,19 +378,19 @@ export default function PledgePage() {
               <h4 className="font-medium mb-4">Legal</h4>
               <ul className="space-y-3 text-gray-600">
                 <li>
-                  <Link href="/privacy" className="hover:text-gray-900 transition-colors">
+                  <a href="/privacy" className="hover:text-gray-900 transition-colors">
                     Privacy Policy
-                  </Link>
+                  </a>
                 </li>
                 <li>
-                  <Link href="/terms" className="hover:text-gray-900 transition-colors">
+                  <a href="/terms" className="hover:text-gray-900 transition-colors">
                     Terms of Service
-                  </Link>
+                  </a>
                 </li>
                 <li>
-                  <Link href="/security" className="hover:text-gray-900 transition-colors">
+                  <a href="/security" className="hover:text-gray-900 transition-colors">
                     Security
-                  </Link>
+                  </a>
                 </li>
               </ul>
             </div>
