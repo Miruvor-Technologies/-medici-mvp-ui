@@ -2,46 +2,27 @@ import { Button } from "@/components/ui/button"
 import { Shield, Users, Zap, ArrowRight, Target, Globe, Heart } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
+import { Header } from "@/components/ui/header"
+import { Footer } from "@/components/ui/footer"
 
 export default function AboutPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="border-b border-gray-100 bg-white sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center">
-            <Image src="/images/medici-logo.svg" alt="Medici" width={120} height={40} className="h-8 w-auto" />
-          </Link>
-          <nav className="hidden md:flex items-center gap-8">
-            <Link href="/about" className="text-gray-900 font-medium">
-              About
-            </Link>
-            <Link href="/how-it-works" className="text-gray-600 hover:text-gray-900 transition-colors">
-              How It Works
-            </Link>
-            <Link href="/faq" className="text-gray-600 hover:text-gray-900 transition-colors">
-              FAQ
-            </Link>
-            <Link href="/privacy" className="text-gray-600 hover:text-gray-900 transition-colors">
-              Privacy Policy
-            </Link>
-            <Button asChild variant="outline" className="rounded-full border-gray-300 hover:bg-gray-50">
-              <Link href="/login">Sign In</Link>
-            </Button>
-          </nav>
-        </div>
-      </header>
+      <Header />
 
       {/* Hero Section */}
-      <section className="container mx-auto px-6 py-20 text-center">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-5xl md:text-6xl font-light text-gray-900 mb-8 leading-tight">About Medici</h1>
-          <p className="text-xl text-gray-600 mb-12 max-w-3xl mx-auto font-light leading-relaxed">
-            We're democratizing education funding through blockchain technology, creating direct connections between
-            students who need support and donors who want to make a difference.
-          </p>
-        </div>
-      </section>
+     <section className="container mx-auto px-6 py-20 text-center">
+  <div className="max-w-4xl mx-auto">
+    <h1 className="text-5xl md:text-6xl font-semibold text-gray-900 mb-6 leading-tight">
+      About Medici
+    </h1>
+    <p className="text-lg md:text-xl text-gray-600 mb-10 max-w-3xl mx-auto font-light leading-relaxed">
+      We're democratizing education funding through blockchain technology, creating direct connections between students who need support and donors who want to make a difference.
+    </p>
+  </div>
+</section>
+
 
       {/* Mission Section */}
       <section className="bg-gray-50 py-20">
@@ -169,81 +150,7 @@ export default function AboutPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-gray-100 py-12">
-        <div className="container mx-auto px-6">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <Image src="/images/medici-logo.svg" alt="Medici" width={120} height={40} className="h-8 w-auto mb-4" />
-              <p className="text-gray-600 leading-relaxed">
-                Democratizing education funding through blockchain technology.
-              </p>
-            </div>
-            <div>
-              <h4 className="font-medium mb-4">Platform</h4>
-              <ul className="space-y-3 text-gray-600">
-                <li>
-                  <Link href="/how-it-works" className="hover:text-gray-900 transition-colors">
-                    How It Works
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/browse" className="hover:text-gray-900 transition-colors">
-                    Browse Students
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/register" className="hover:text-gray-900 transition-colors">
-                    Apply for Funding
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-medium mb-4">Support</h4>
-              <ul className="space-y-3 text-gray-600">
-                <li>
-                  <Link href="/faq" className="hover:text-gray-900 transition-colors">
-                    FAQ
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/contact" className="hover:text-gray-900 transition-colors">
-                    Contact
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/help" className="hover:text-gray-900 transition-colors">
-                    Help Center
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-medium mb-4">Legal</h4>
-              <ul className="space-y-3 text-gray-600">
-                <li>
-                  <Link href="/privacy" className="hover:text-gray-900 transition-colors">
-                    Privacy Policy
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/terms" className="hover:text-gray-900 transition-colors">
-                    Terms of Service
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/security" className="hover:text-gray-900 transition-colors">
-                    Security
-                  </Link>
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-gray-100 mt-12 pt-8 text-center text-gray-600">
-            <p>&copy; 2024 Medici. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }
