@@ -218,16 +218,7 @@ export default function HomePage() {
                     Privacy Policy
                   </Link>
                 </li>
-                <li>
-                  <Link href="/terms" className="hover:text-gray-900 transition-colors">
-                    Terms of Service
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/security" className="hover:text-gray-900 transition-colors">
-                    Security
-                  </Link>
-                </li>
+
               </ul>
             </div>
           </div>
