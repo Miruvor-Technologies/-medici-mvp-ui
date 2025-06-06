@@ -26,7 +26,7 @@ export function Header() {
                 <Link href="/how-it-works" className="text-gray-600 hover:text-gray-900 transition-colors">
                   How It Works
                 </Link>
-                <Link href="/faq" className="text-gray-900 font-medium">
+                <Link href="/faq" className="text-gray-600 hover:text-gray-900 transition-colors">
                   FAQ
                 </Link>
                 <Link href="/privacy" className="text-gray-600 hover:text-gray-900 transition-colors">
