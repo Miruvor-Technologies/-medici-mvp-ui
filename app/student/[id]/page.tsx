@@ -11,7 +11,7 @@ import { getStudentById } from "@/utils/sample-data"
 
 
 
-export default async function StudentProfilePage({ params }: { params: { id: string } }) {
+export default function StudentProfilePage({ params }: { params: { id: string } }) {
   const studentId = parseInt(params.id)
   const student = getStudentById(studentId)
 
