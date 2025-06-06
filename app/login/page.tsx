@@ -12,10 +12,16 @@ export default function LoginPage() {
     <div className="min-h-screen bg-white">
       {/* Header */}
       <header className="border-b border-gray-100">
-        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center">
-            <Image src="/images/medici-logo.svg" alt="Medici" width={120} height={40} className="h-8 w-auto" />
-          </Link>
+        <div className="container mx-auto px-6 py-0 flex items-center justify-between h-16">
+    <Link href="/" className="flex items-center">
+      <Image
+        src="/images/medici-logo.svg"
+        alt="Medici"
+        width={200}
+        height={64}
+        className="h-14 w-auto"
+      />
+    </Link>
           <Link href="/register" className="text-gray-600 hover:text-gray-900 transition-colors">
             Don't have an account? Sign up
           </Link>
