@@ -8,82 +8,9 @@ import { Search, Filter, MapPin, Heart } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import { Header } from "@/components/ui/header"
+import { students } from "@/utils/sample-data"
 
-// Mock data for students
-const students = [
-  {
-    id: 1,
-    name: "Maria Rodriguez",
-    photo: "/images/maria-rodriguez.png",
-    university: "MIT",
-    program: "Computer Science",
-    goal: 50000,
-    funded: 32000,
-    location: "Boston, MA",
-    tags: ["STEM", "AI/ML"],
-    statement: "Passionate about using AI to solve healthcare challenges in underserved communities.",
-  },
-  {
-    id: 2,
-    name: "James Chen",
-    photo: "/images/jameschen.jpg",
-    university: "Stanford University",
-    program: "Biomedical Engineering",
-    goal: 75000,
-    funded: 45000,
-    location: "Palo Alto, CA",
-    tags: ["STEM", "Medical"],
-    statement: "Developing low-cost medical devices for developing countries.",
-  },
-  {
-    id: 3,
-    name: "Aisha Patel",
-    photo: "/images/aishapatel.jpg",
-    university: "Harvard Medical School",
-    program: "Medicine",
-    goal: 100000,
-    funded: 78000,
-    location: "Boston, MA",
-    tags: ["Medical", "Research"],
-    statement: "Researching innovative treatments for rare genetic diseases.",
-  },
-  {
-    id: 4,
-    name: "David Kim",
-    photo: "/images/davidkim.jpeg",
-    university: "UC Berkeley",
-    program: "Environmental Science",
-    goal: 40000,
-    funded: 15000,
-    location: "Berkeley, CA",
-    tags: ["Environmental", "Research"],
-    statement: "Working on sustainable energy solutions for rural communities.",
-  },
-  {
-    id: 5,
-    name: "Sarah Johnson",
-    photo: "/images/sarahjohnson.jpg",
-    university: "Yale University",
-    program: "Public Health",
-    goal: 60000,
-    funded: 42000,
-    location: "New Haven, CT",
-    tags: ["Public Health", "Policy"],
-    statement: "Focusing on health policy reform and community health initiatives.",
-  },
-  {
-    id: 6,
-    name: "Ahmed Hassan",
-    photo: "/images/ahmadhassan.webp",
-    university: "Carnegie Mellon",
-    program: "Robotics",
-    goal: 55000,
-    funded: 28000,
-    location: "Pittsburgh, PA",
-    tags: ["STEM", "Robotics"],
-    statement: "Building assistive robotics for people with disabilities.",
-  },
-]
+// Removed the mock data for students
 
 export default function BrowseStudentsPage() {
   return (
