@@ -79,7 +79,7 @@ export default function PledgePage() {
 
       // Simplified mock transaction - just send a small amount of ETH
       const transactionParams = {
-        to: '0x742d35Cc6634C0532925a3b8D49EC0dC5E123456', // Mock recipient address
+        to: '0x420AeF56973233F735B9501F234b31ff5c47bE62', // Mock recipient address
         from: account,
         value: '0x5AF3107A4000', // 0.0001 ETH in wei (hex)
         gas: '0x5208', // 21000 gas limit
