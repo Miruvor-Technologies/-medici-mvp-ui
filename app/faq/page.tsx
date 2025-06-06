@@ -1,11 +1,57 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { ChevronDown, ArrowRight } from "lucide-react"
+import { ChevronDown, ArrowRight, Twitter, Mail } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
+import { cacheTag } from "next/dist/server/use-cache/cache-tag"
+import { Footer } from "@/components/ui/footer"
+import { Header } from "@/components/ui/header"
 
 const faqs = [
+
+  {
+     category: "General",
+    questions: [{ 
+    question: "How can I verify that the student received my donation?",
+    answer:
+      "When you complete a transaction, you'll receive a transaction reference or hash. While we notify you of the transaction status, you don't need to take our word for it. Use the hash to independently verify the transaction on any public blockchain explorer.",
+  },
+  {
+    question: "What fees does Medici charge?",
+    answer:
+      "Medici charges a small fee per transaction to support platform development. However, during our early access phase, all platform fees are waived. You'll only pay the standard blockchain network fee.",
+  },
+  {
+    question: "Can I donate if I'm not familiar with cryptocurrencies?",
+    answer:
+      "You'll need a crypto wallet with funds to complete a donation. If you're new to crypto, our team can share resources and guide you through setting up a wallet and adding funds.",
+  },
+  {
+    question: "Will I receive updates about the student I support?",
+    answer:
+      "We encourage students to share updates on how they use the funds they receive. If you'd like to stay informed, sign up with your email after you complete a transaction to receive occasional, non-spammy updates about their progress. We're also working on features that improve accountability and traceability over time.",
+  },
+  {
+    question: "Are donations made through Medici tax-deductible?",
+    answer:
+      "Donations made through Medici are currently not tax-deductible. We are exploring partnerships and paths to enable this in the future.",
+  },
+  {
+    question: "Can I support students outside the US?",
+    answer:
+      "Medici is currently available to US citizens and international students who are enrolled or expected to enroll at a US institution. We're actively working on expanding access to students globally.",
+  },
+  {
+    question: "What blockchain does Medici operate on?",
+    answer:
+      "Medici runs on the Solana blockchain and supports USDC (a stablecoin pegged to the US dollar) for all transactions.",
+  },
+
+
+
+    ],
+  },
   {
     category: "For Donors",
     questions: [
@@ -121,72 +167,50 @@ const faqs = [
 export default function FAQPage() {
   return (
     <div className="min-h-screen bg-white">
-      {/* Header */}
-      <header className="border-b border-gray-100 bg-white sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center">
-            <Image src="/images/medici-logo.svg" alt="Medici" width={120} height={40} className="h-8 w-auto" />
-          </Link>
-          <nav className="hidden md:flex items-center gap-8">
-            <Link href="/about" className="text-gray-600 hover:text-gray-900 transition-colors">
-              About
-            </Link>
-            <Link href="/how-it-works" className="text-gray-600 hover:text-gray-900 transition-colors">
-              How It Works
-            </Link>
-            <Link href="/faq" className="text-gray-900 font-medium">
-              FAQ
-            </Link>
-            <Link href="/privacy" className="text-gray-600 hover:text-gray-900 transition-colors">
-              Privacy Policy
-            </Link>
-            <Button asChild variant="outline" className="rounded-full border-gray-300 hover:bg-gray-50">
-              <Link href="/login">Sign In</Link>
-            </Button>
-          </nav>
-        </div>
-      </header>
+     <Header />
 
-      <div className="container mx-auto px-6 py-20">
-        {/* Hero Section */}
-        <div className="text-center mb-20">
-          <h1 className="text-5xl md:text-6xl font-light text-gray-900 mb-8 leading-tight">
-            Frequently Asked Questions
-          </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto font-light leading-relaxed">
-            Find answers to common questions about Medici, blockchain funding, and how our platform works.
-          </p>
-        </div>
+<div className="container mx-auto px-6 py-20">
+  {/* Hero Section */}
+  <div className="text-center mb-20">
+    <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight tracking-tight">
+      Frequently Asked Questions
+    </h1>
+    <p className="text-xl text-muted-foreground max-w-3xl mx-auto font-light leading-relaxed">
+      Find answers to common questions about Medici, blockchain funding, and how our platform works.
+    </p>
+  </div>
 
-        {/* FAQ Categories */}
-        <div className="space-y-16 max-w-4xl mx-auto">
-          {faqs.map((category, categoryIndex) => (
-            <section key={categoryIndex}>
-              <h2 className="text-3xl font-light text-gray-900 mb-8">{category.category}</h2>
-              <div className="space-y-4">
-                {category.questions.map((faq, faqIndex) => (
-                  <Collapsible key={faqIndex}>
-                    <Card className="border-gray-200">
-                      <CollapsibleTrigger className="w-full">
-                        <CardHeader className="hover:bg-gray-50 transition-colors">
-                          <CardTitle className="text-left flex items-center justify-between font-medium">
-                            <span>{faq.question}</span>
-                            <ChevronDown className="h-5 w-5 text-gray-400 transition-transform group-data-[state=open]:rotate-180" />
-                          </CardTitle>
-                        </CardHeader>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent>
-                        <CardContent className="pt-0">
-                          <p className="text-gray-600 leading-relaxed">{faq.answer}</p>
-                        </CardContent>
-                      </CollapsibleContent>
-                    </Card>
-                  </Collapsible>
-                ))}
-              </div>
-            </section>
-          ))}
-        </div>
+{/* FAQ Categories */}
+<div className="space-y-12 max-w-3xl mx-auto">
+  {faqs.map((category, categoryIndex) => (
+    <section key={categoryIndex}>
+      <h2 className="text-2xl font-semibold text-gray-800 mb-5 border-b border-gray-200 pb-1">
+        {category.category}
+      </h2>
+      <div className="space-y-3">
+        {category.questions.map((faq, faqIndex) => (
+          <Collapsible key={faqIndex}>
+            <Card className="border border-gray-200 rounded-lg shadow-sm transition-shadow hover:shadow-md">
+              <CollapsibleTrigger className="w-full text-left">
+                <CardHeader className="px-4 py-3 group flex justify-between items-center hover:bg-gray-50 transition-colors">
+                  <CardTitle className="text-base font-medium text-gray-900 group-hover:text-blue-600 transition-colors">
+                    {faq.question}
+                  </CardTitle>
+                  <ChevronDown className="h-4 w-4 text-gray-400 group-data-[state=open]:rotate-180 transition-transform duration-300" />
+                </CardHeader>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <CardContent className="px-4 pb-4 text-sm text-muted-foreground leading-relaxed">
+                  {faq.answer}
+                </CardContent>
+              </CollapsibleContent>
+            </Card>
+          </Collapsible>
+        ))}
+      </div>
+    </section>
+  ))}
+</div>
 
         {/* Contact Section */}
         <section className="mt-20">
@@ -197,13 +221,19 @@ export default function FAQPage() {
                 Can't find the answer you're looking for? Our support team is here to help you get started with Medici.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button
-                  size="lg"
-                  className="rounded-full bg-blue-600 hover:bg-blue-700 text-white px-8 py-6 text-lg font-medium"
-                >
-                  Contact Support
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
+                <a
+  href="https://x.com/Medici_ac"
+  target="_blank"
+  rel="noopener noreferrer"
+>
+  <Button
+    size="lg"
+    className="rounded-full bg-blue-600 hover:bg-blue-700 text-white px-8 py-6 text-lg font-medium"
+  >
+    Contact Support
+    <ArrowRight className="ml-2 h-5 w-5" />
+  </Button>
+</a>
                 <Button
                   asChild
                   variant="outline"
@@ -219,81 +249,9 @@ export default function FAQPage() {
       </div>
 
       {/* Footer */}
-      <footer className="border-t border-gray-100 py-12">
-        <div className="container mx-auto px-6">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <Image src="/images/medici-logo.svg" alt="Medici" width={120} height={40} className="h-8 w-auto mb-4" />
-              <p className="text-gray-600 leading-relaxed">
-                Democratizing education funding through blockchain technology.
-              </p>
-            </div>
-            <div>
-              <h4 className="font-medium mb-4">Platform</h4>
-              <ul className="space-y-3 text-gray-600">
-                <li>
-                  <Link href="/how-it-works" className="hover:text-gray-900 transition-colors">
-                    How It Works
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/browse" className="hover:text-gray-900 transition-colors">
-                    Browse Students
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/register" className="hover:text-gray-900 transition-colors">
-                    Apply for Funding
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-medium mb-4">Support</h4>
-              <ul className="space-y-3 text-gray-600">
-                <li>
-                  <Link href="/faq" className="hover:text-gray-900 transition-colors">
-                    FAQ
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/contact" className="hover:text-gray-900 transition-colors">
-                    Contact
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/help" className="hover:text-gray-900 transition-colors">
-                    Help Center
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-medium mb-4">Legal</h4>
-              <ul className="space-y-3 text-gray-600">
-                <li>
-                  <Link href="/privacy" className="hover:text-gray-900 transition-colors">
-                    Privacy Policy
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/terms" className="hover:text-gray-900 transition-colors">
-                    Terms of Service
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/security" className="hover:text-gray-900 transition-colors">
-                    Security
-                  </Link>
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-gray-100 mt-12 pt-8 text-center text-gray-600">
-            <p>&copy; 2024 Medici. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      
+        <Footer />
+
     </div>
   )
 }
