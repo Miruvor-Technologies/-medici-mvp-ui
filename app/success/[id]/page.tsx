@@ -6,38 +6,59 @@ import Link from "next/link"
 import Image from "next/image"
 import { Header } from "@/components/ui/header"
 import { Footer } from "@/components/ui/footer"
+import { getStudentById } from "@/utils/sample-data"
 
+export default function SuccessPage({ params }: { params: { id: string } }) {
+  const studentId = parseInt(params.id)
+  const student = getStudentById(studentId)
 
-export default function SuccessPage() {
+  // Mock transaction data - you can replace this with real data
+  const transactionData = {
+    amount: "250", // This should come from your actual transaction
+    hash: "0x1234...5678",
+    network: "Ethereum",
+    status: "Confirmed"
+  }
+
+  if (!student) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-medium text-gray-900 mb-2">Student Not Found</h1>
+          <p className="text-gray-600 mb-4">The student profile you're looking for doesn't exist.</p>
+          <Button asChild variant="outline" size="lg">
+            <Link href="/browse">Back to Browse</Link>
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-white">
-      {/* Header */}
       <Header />
 
       <div className="container mx-auto px-6 py-20 max-w-2xl text-center">
-        {/* Success Icon */}
         <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-8">
           <CheckCircle className="h-12 w-12 text-blue-600" />
         </div>
 
-        {/* Success Message */}
         <h1 className="text-4xl md:text-5xl font-light text-gray-900 mb-6 leading-tight">
           Your funds are on the way to {student.name}!
         </h1>
         <p className="text-xl text-gray-600 mb-12 font-light leading-relaxed">
-          Your ${student.amount} USDC contribution is being processed on the blockchain
+          Your ${transactionData.amount} USDC contribution is being processed on the blockchain
         </p>
 
-        {/* Student Card */}
         <Card className="mb-8 border-gray-200">
           <CardContent className="p-6">
             <div className="flex items-center gap-6">
               <Image
-                src={student.photo || "/placeholder.svg"}
+                src={student.photo}
                 alt={student.name}
                 width={80}
                 height={80}
-                className="rounded-full object-cover"
+                className="rounded-full object-cover w-20 h-20"
               />
               <div className="text-left">
                 <h3 className="text-xl font-medium">{student.name}</h3>
@@ -46,7 +67,7 @@ export default function SuccessPage() {
                 </p>
                 <div className="flex items-center gap-2">
                   <Heart className="h-4 w-4 text-blue-600" />
-                  <span className="text-sm text-gray-600">You contributed ${student.amount}</span>
+                  <span className="text-sm text-gray-600">You contributed ${transactionData.amount}</span>
                 </div>
               </div>
             </div>
@@ -60,19 +81,19 @@ export default function SuccessPage() {
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-600">Amount:</span>
-                <span className="font-medium">${student.amount} USDC</span>
+                <span className="font-medium">${transactionData.amount} USDC</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Transaction Hash:</span>
-                <span className="font-mono text-xs text-blue-600">0x1234...5678</span>
+                <span className="font-mono text-xs text-blue-600">{transactionData.hash}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Network:</span>
-                <span className="font-medium">Ethereum</span>
+                <span className="font-medium">{transactionData.network}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Status:</span>
-                <span className="text-blue-600 font-medium">Confirmed</span>
+                <span className="text-blue-600 font-medium">{transactionData.status}</span>
               </div>
             </div>
           </CardContent>
@@ -93,12 +114,6 @@ export default function SuccessPage() {
           </CardContent>
         </Card>
 
-        {/* Confirmation Message */}
-        <div className="mb-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <p className="text-blue-800 font-medium">Thanks for Subscribing!</p>
-          <p className="text-blue-700 text-sm">You'll receive updates about {student.name}'s progress via email.</p>
-        </div>
-
         {/* Action Buttons */}
         <div className="space-y-4">
           <Button
@@ -118,7 +133,7 @@ export default function SuccessPage() {
               Share
             </Button>
             <Button variant="outline" asChild className="flex-1 rounded-full border-gray-300 hover:bg-gray-50 h-12">
-              <Link href={`/student/${student.name.toLowerCase().replace(" ", "-")}`}>
+              <Link href={`/student/${student.id}`}>
                 View Profile
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
@@ -136,7 +151,6 @@ export default function SuccessPage() {
         </div>
       </div>
 
-      {/* Footer */}
       <Footer/>
     </div>
   )

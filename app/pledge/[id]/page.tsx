@@ -106,9 +106,9 @@ export default function PledgePage({ params }: { params: { id: string } }) {
       // Wait for 3 seconds to simulate transaction processing
       await new Promise(resolve => setTimeout(resolve, 3000))
 
-      // Redirect to success page (only on client side)
+      // Redirect to success page with student ID
       if (typeof window !== 'undefined') {
-        window.location.href = '/success'
+        window.location.href = `/success/${studentId}`
       }
 
     } catch (error: any) {
