@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Search, Filter, MapPin, Heart } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
+import { Header } from "@/components/ui/header"
 
 // Mock data for students
 const students = [
@@ -25,7 +26,7 @@ const students = [
   {
     id: 2,
     name: "James Chen",
-    photo: "/placeholder.svg?height=200&width=200",
+    photo: "/images/jameschen.jpg",
     university: "Stanford University",
     program: "Biomedical Engineering",
     goal: 75000,
@@ -37,7 +38,7 @@ const students = [
   {
     id: 3,
     name: "Aisha Patel",
-    photo: "/placeholder.svg?height=200&width=200",
+    photo: "/images/aishapatel.jpg",
     university: "Harvard Medical School",
     program: "Medicine",
     goal: 100000,
@@ -49,7 +50,7 @@ const students = [
   {
     id: 4,
     name: "David Kim",
-    photo: "/placeholder.svg?height=200&width=200",
+    photo: "/images/davidkim.jpeg",
     university: "UC Berkeley",
     program: "Environmental Science",
     goal: 40000,
@@ -61,7 +62,7 @@ const students = [
   {
     id: 5,
     name: "Sarah Johnson",
-    photo: "/placeholder.svg?height=200&width=200",
+    photo: "/images/sarahjohnson.jpg",
     university: "Yale University",
     program: "Public Health",
     goal: 60000,
@@ -73,7 +74,7 @@ const students = [
   {
     id: 6,
     name: "Ahmed Hassan",
-    photo: "/placeholder.svg?height=200&width=200",
+    photo: "/images/ahmadhassan.webp",
     university: "Carnegie Mellon",
     program: "Robotics",
     goal: 55000,
@@ -88,27 +89,7 @@ export default function BrowseStudentsPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="border-b border-gray-100 bg-white sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center">
-            <Image src="/images/medici-logo.svg" alt="Medici" width={120} height={40} className="h-8 w-auto" />
-          </Link>
-          <nav className="hidden md:flex items-center gap-8">
-            <Link href="/about" className="text-gray-600 hover:text-gray-900 transition-colors">
-              About
-            </Link>
-            <Link href="/how-it-works" className="text-gray-600 hover:text-gray-900 transition-colors">
-              How It Works
-            </Link>
-            <Link href="/faq" className="text-gray-600 hover:text-gray-900 transition-colors">
-              FAQ
-            </Link>
-            <Button asChild variant="outline" className="rounded-full border-gray-300 hover:bg-gray-50">
-              <Link href="/login">Sign In</Link>
-            </Button>
-          </nav>
-        </div>
-      </header>
+      <Header />
 
       <div className="container mx-auto px-6 py-12">
         <div className="flex flex-col lg:flex-row gap-12">
