@@ -33,7 +33,9 @@ export function Header() {
                   Privacy Policy
                 </Link>
                 <Button asChild variant="outline" className="rounded-full border-gray-300 hover:bg-gray-50">
-                  <Link href="/login">Sign In</Link>
+                <a href="mailto:contact@medici.ac" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-gray-900 transition-colors">
+                  Contact Us
+                </a>
                 </Button>
               </nav>
             </div>

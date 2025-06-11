@@ -8,8 +8,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { Footer } from "@/components/ui/footer"
 import { getStudentById } from "@/utils/sample-data"
-
-
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 export default function StudentProfilePage({ params }: { params: { id: string } }) {
   const studentId = parseInt(params.id)
@@ -92,7 +91,7 @@ export default function StudentProfilePage({ params }: { params: { id: string } 
                       <MapPin className="h-4 w-4" />
                       {student.location}
                     </p>
-                    <div className="flex flex-wrap gap-2">
+                    {/* <div className="flex flex-wrap gap-2">
                       {student.tags.map((tag) => (
                         <Badge
                           key={tag}
@@ -102,7 +101,7 @@ export default function StudentProfilePage({ params }: { params: { id: string } 
                           {tag}
                         </Badge>
                       ))}
-                    </div>
+                    </div> */}
                   </div>
                 </div>
               </CardContent>
@@ -110,12 +109,9 @@ export default function StudentProfilePage({ params }: { params: { id: string } 
 
             {/* Tabs */}
             <Tabs defaultValue="story" className="w-full">
-              <TabsList className="grid w-full grid-cols-4 rounded-full bg-gray-100">
+              <TabsList className="grid w-full grid-cols-3 rounded-full bg-gray-100">
                 <TabsTrigger value="story" className="rounded-full">
                   Story
-                </TabsTrigger>
-                <TabsTrigger value="milestones" className="rounded-full">
-                  Milestones
                 </TabsTrigger>
                 <TabsTrigger value="documents" className="rounded-full">
                   Documents
@@ -130,37 +126,47 @@ export default function StudentProfilePage({ params }: { params: { id: string } 
                   <CardHeader>
                     <CardTitle className="text-xl font-light">My Story</CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-700 leading-relaxed">{student.statement}</p>
-                  </CardContent>
-                </Card>
-              </TabsContent>
+                  <CardContent className="space-y-8">
+                    <div>
+                      <h3 className="font-medium mb-3">Personal Statement</h3>
+                      <p className="text-gray-700 leading-relaxed">{student.statement}</p>
+                    </div>
 
-              <TabsContent value="milestones" className="mt-8">
-                <Card className="border-gray-200">
-                  <CardHeader>
-                    <CardTitle className="text-xl font-light">Funding Milestones</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {student.milestones.map((milestone, index) => (
-                        <div key={index} className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg">
-                          <div
-                            className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                              milestone.completed ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-400"
-                            }`}
-                          >
-                            {milestone.completed ? "✓" : index + 1}
-                          </div>
-                          <div className="flex-1">
-                            <h4 className="font-medium">{milestone.title}</h4>
-                            <p className="text-sm text-gray-600">${milestone.amount.toLocaleString()}</p>
-                          </div>
-                          <Badge variant={milestone.completed ? "default" : "secondary"} className="rounded-full">
-                            {milestone.completed ? "Completed" : "Pending"}
-                          </Badge>
-                        </div>
-                      ))}
+                    <div className="space-y-6">
+                      <div>
+                        <h3 className="font-medium mb-2">What inspired you to choose your field of study?</h3>
+                        <p className="text-gray-700 leading-relaxed">
+                          My passion for {student.program} began when I witnessed firsthand the impact of technology in healthcare settings. The potential to create innovative solutions that can help people worldwide drives me forward.
+                        </p>
+                      </div>
+
+                      <div>
+                        <h3 className="font-medium mb-2">How do you plan to use your education to make an impact?</h3>
+                        <p className="text-gray-700 leading-relaxed">
+                          I aim to develop accessible and affordable solutions that can benefit communities globally. My research and studies will focus on creating practical applications that address real-world challenges.
+                        </p>
+                      </div>
+
+                      <div>
+                        <h3 className="font-medium mb-2">What challenges have you overcome in your academic journey?</h3>
+                        <p className="text-gray-700 leading-relaxed">
+                          Coming from a background with limited resources, I've had to work exceptionally hard to pursue my education. Through determination and support from mentors, I've maintained academic excellence while working part-time.
+                        </p>
+                      </div>
+
+                      <div>
+                        <h3 className="font-medium mb-2">How will this funding specifically help you achieve your goals?</h3>
+                        <p className="text-gray-700 leading-relaxed">
+                          The funding will cover my tuition and essential research materials, allowing me to focus fully on my studies and research. It will also enable me to participate in key conferences and workshops in my field.
+                        </p>
+                      </div>
+
+                      <div>
+                        <h3 className="font-medium mb-2">What extracurricular activities or projects are you involved in?</h3>
+                        <p className="text-gray-700 leading-relaxed">
+                          I actively participate in research projects, mentor younger students, and volunteer in community outreach programs. These experiences help me apply my knowledge while giving back to the community.
+                        </p>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -169,7 +175,40 @@ export default function StudentProfilePage({ params }: { params: { id: string } 
               <TabsContent value="documents" className="mt-8">
                 <Card className="border-gray-200">
                   <CardHeader>
-                    <CardTitle className="text-xl font-light">Verification Documents</CardTitle>
+                    <CardTitle className="text-xl font-light flex items-center justify-between">
+                      <span>Verification Documents</span>
+                      <TooltipProvider>
+                        <Tooltip delayDuration={200}>
+                          <TooltipTrigger asChild>
+                            <Badge 
+                              variant="secondary" 
+                              className="h-7 px-3 rounded-full cursor-help bg-green-50 text-green-700 border-green-200"
+                            >
+                              <div className="flex items-center gap-1">
+                                ✓ Verified
+                              </div>
+                            </Badge>
+                          </TooltipTrigger>
+                          <TooltipContent 
+                            side="right" 
+                            align="center" 
+                            className="max-w-[300px] p-4 bg-white shadow-lg rounded-xl border border-gray-200"
+                          >
+                            <div className="space-y-3 text-sm">
+                              <p className="text-gray-700">Documents verified by Medici. You can view any document by contacting us.</p>
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                className="w-full rounded-full"
+                                asChild
+                              >
+                                <a href="mailto:contact@medici.ac">Contact for Documents</a>
+                              </Button>
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
@@ -258,30 +297,6 @@ export default function StudentProfilePage({ params }: { params: { id: string } 
                     </Link>
                   </Button>
                   <p className="text-xs text-gray-500 text-center">Secure payments powered by blockchain technology</p>
-                </CardContent>
-              </Card>
-
-              {/* Quick Stats */}
-              <Card className="border-gray-200">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-xl font-light">
-                    <Award className="h-5 w-5" />
-                    Quick Stats
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Backers:</span>
-                    <span className="font-medium">47</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Average pledge:</span>
-                    <span className="font-medium">$680</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Days remaining:</span>
-                    <span className="font-medium">156</span>
-                  </div>
                 </CardContent>
               </Card>
             </div>

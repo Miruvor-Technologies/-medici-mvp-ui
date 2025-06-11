@@ -8,24 +8,40 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
-import { User, DollarSign, FileText, Wallet, CheckCircle, Upload, ArrowRight, ArrowLeft } from "lucide-react"
+import { User, DollarSign, FileText, Wallet, CheckCircle, Upload, ArrowRight, ArrowLeft, Info, Plus } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import { useState } from "react"
 import { Footer } from "@/components/ui/footer"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 export default function StudentRegisterPage() {
   const [currentStep, setCurrentStep] = useState(1)
-  const totalSteps = 5
+  const [socialLinks, setSocialLinks] = useState([{ platform: '', url: '' }])
+  const totalSteps = 4
   const progress = (currentStep / totalSteps) * 100
 
   const steps = [
     { number: 1, title: "Basic Info", icon: User },
-    { number: 2, title: "Funding Request", icon: DollarSign },
-    { number: 3, title: "Your Story", icon: FileText },
-    { number: 4, title: "Verification", icon: CheckCircle },
-    { number: 5, title: "Wallet Setup", icon: Wallet },
+    { number: 2, title: "Your Story", icon: FileText },
+    { number: 3, title: "Social Links", icon: FileText },
+    { number: 4, title: "Wallet Setup", icon: Wallet },
   ]
+
+  const addSocialLink = () => {
+    setSocialLinks([...socialLinks, { platform: '', url: '' }])
+  }
+
+  const updateSocialLink = (index: number, field: 'platform' | 'url', value: string) => {
+    const newLinks = [...socialLinks]
+    newLinks[index][field] = value
+    setSocialLinks(newLinks)
+  }
 
   const scrollToTop = () => {
     window.scrollTo({
@@ -62,9 +78,14 @@ export default function StudentRegisterPage() {
                   className="h-14 w-auto"
                 />
               </Link>
-          <Link href="/login" className="text-gray-600 hover:text-gray-900 transition-colors">
+          {/* <Link href="/login" className="text-gray-600 hover:text-gray-900 transition-colors">
             Already have an account? Sign In
-          </Link>
+          </Link> */}
+            <Button asChild variant="outline" className="rounded-full border-gray-300 hover:bg-gray-50">
+                <a href="mailto:contact@medici.ac" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-gray-900 transition-colors">
+                  Contact Us
+                </a>
+                </Button>
         </div>
       </header>
 
@@ -223,22 +244,32 @@ export default function StudentRegisterPage() {
                     </Select>
                   </div>
                 </div>
-              </div>
-            )}
-
-            {currentStep === 2 && (
-              <div className="space-y-8">
-                <div>
-                  <CardTitle className="text-2xl font-light mb-4">Funding Request</CardTitle>
-                  <p className="text-gray-600 mb-8 leading-relaxed">
-                    How much funding do you need and what will it be used for?
-                  </p>
-                </div>
 
                 <div>
-                  <Label htmlFor="totalAmount" className="text-sm font-medium">
-                    Total Amount Needed (USDC)
-                  </Label>
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="totalAmount" className="text-sm font-medium">
+                      Total Amount Needed (USDC)
+                    </Label>
+                    <TooltipProvider>
+                      <Tooltip delayDuration={200}>
+                        <TooltipTrigger asChild>
+                          <Button variant="ghost" size="icon" className="p-0 h-auto">
+                            <Info className="h-4 w-4 text-gray-400" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent 
+                          side="right" 
+                          align="center" 
+                          className="max-w-[300px] p-4 bg-white shadow-lg rounded-xl border border-gray-200"
+                        >
+                          <p className="text-sm text-gray-700 leading-relaxed">
+                            USDC is a stablecoin that maintains a 1:1 value with the US Dollar. Unlike other cryptocurrencies, 
+                            its value remains stable and won't fluctuate, making it a safe way to receive and store funds.
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
                   <div className="relative mt-2">
                     <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
                     <Input
@@ -250,57 +281,10 @@ export default function StudentRegisterPage() {
                   </div>
                   <p className="text-sm text-gray-500 mt-2">Enter the total amount you need for your education</p>
                 </div>
-
-                <div>
-                  <Label className="text-sm font-medium mb-4 block">Funding Breakdown (Optional)</Label>
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <Input placeholder="Category (e.g., Tuition)" className="rounded-full border-gray-300 h-12" />
-                      <div className="relative">
-                        <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
-                        <Input type="number" placeholder="0.00" className="pl-8 rounded-full border-gray-300 h-12" />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <Input placeholder="Category (e.g., Housing)" className="rounded-full border-gray-300 h-12" />
-                      <div className="relative">
-                        <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
-                        <Input type="number" placeholder="0.00" className="pl-8 rounded-full border-gray-300 h-12" />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <Input placeholder="Category (e.g., Books)" className="rounded-full border-gray-300 h-12" />
-                      <div className="relative">
-                        <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
-                        <Input type="number" placeholder="0.00" className="pl-8 rounded-full border-gray-300 h-12" />
-                      </div>
-                    </div>
-                  </div>
-                  <Button variant="outline" size="sm" className="mt-4 rounded-full border-gray-300 hover:bg-gray-50">
-                    Add Another Category
-                  </Button>
-                </div>
-
-                <div>
-                  <Label htmlFor="timeline" className="text-sm font-medium">
-                    Expected Timeline
-                  </Label>
-                  <Select>
-                    <SelectTrigger className="mt-2 rounded-full border-gray-300 h-12">
-                      <SelectValue placeholder="When do you need the funding?" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="immediate">Immediately</SelectItem>
-                      <SelectItem value="1-3months">1-3 months</SelectItem>
-                      <SelectItem value="3-6months">3-6 months</SelectItem>
-                      <SelectItem value="6-12months">6-12 months</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
               </div>
             )}
 
-            {currentStep === 3 && (
+            {currentStep === 2 && (
               <div className="space-y-8">
                 <div>
                   <CardTitle className="text-2xl font-light mb-4">Your Story</CardTitle>
@@ -318,90 +302,129 @@ export default function StudentRegisterPage() {
                     placeholder="Tell your story... What are you studying? What are your goals? How will this funding help you make an impact?"
                     className="mt-2 min-h-[200px] border-gray-300 rounded-lg"
                   />
-                  <p className="text-sm text-gray-500 mt-2">
-                    Share your passion, goals, and how the funding will help you make a difference.
+                </div>
+
+                <div className="space-y-6">
+                  <div>
+                    <Label htmlFor="q1" className="text-sm font-medium">
+                      What inspired you to choose your field of study?
+                    </Label>
+                    <Textarea
+                      id="q1"
+                      className="mt-2 border-gray-300 rounded-lg"
+                      placeholder="Share your inspiration and motivation..."
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="q2" className="text-sm font-medium">
+                      How do you plan to use your education to make an impact?
+                    </Label>
+                    <Textarea
+                      id="q2"
+                      className="mt-2 border-gray-300 rounded-lg"
+                      placeholder="Describe your future goals and impact..."
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="q3" className="text-sm font-medium">
+                      What challenges have you overcome in your academic journey?
+                    </Label>
+                    <Textarea
+                      id="q3"
+                      className="mt-2 border-gray-300 rounded-lg"
+                      placeholder="Share your experiences and resilience..."
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="q4" className="text-sm font-medium">
+                      How will this funding specifically help you achieve your goals?
+                    </Label>
+                    <Textarea
+                      id="q4"
+                      className="mt-2 border-gray-300 rounded-lg"
+                      placeholder="Explain how the funding will be used..."
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="q5" className="text-sm font-medium">
+                      What extracurricular activities or projects are you involved in?
+                    </Label>
+                    <Textarea
+                      id="q5"
+                      className="mt-2 border-gray-300 rounded-lg"
+                      placeholder="Share your activities and involvement..."
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {currentStep === 3 && (
+              <div className="space-y-8">
+                <div>
+                  <CardTitle className="text-2xl font-light mb-4">Social Links</CardTitle>
+                  <p className="text-gray-600 mb-8 leading-relaxed">
+                    Add your social media profiles to help donors learn more about you.
                   </p>
                 </div>
 
-                <div>
-                  <Label className="text-sm font-medium mb-4 block">Profile Photo</Label>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center hover:border-gray-400 transition-colors cursor-pointer">
-                    <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-600 mb-2">Click to upload or drag and drop</p>
-                    <p className="text-sm text-gray-500">PNG, JPG up to 10MB</p>
-                  </div>
+                <div className="space-y-6">
+                  {socialLinks.map((link, index) => (
+                    <div key={index} className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Select
+                          value={link.platform}
+                          onValueChange={(value) => updateSocialLink(index, 'platform', value)}
+                        >
+                          <SelectTrigger className="rounded-full border-gray-300 h-12">
+                            <SelectValue placeholder="Select platform" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="linkedin">LinkedIn</SelectItem>
+                            <SelectItem value="twitter">X (Twitter)</SelectItem>
+                            <SelectItem value="website">Personal Website</SelectItem>
+                            <SelectItem value="instagram">Instagram</SelectItem>
+                            <SelectItem value="facebook">Facebook</SelectItem>
+                            <SelectItem value="other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <Input
+                        value={link.url}
+                        onChange={(e) => updateSocialLink(index, 'url', e.target.value)}
+                        placeholder="Enter URL"
+                        className="rounded-full border-gray-300 h-12"
+                      />
+                    </div>
+                  ))}
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={addSocialLink}
+                    className="rounded-full border-gray-300 hover:bg-gray-50"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Another Link
+                  </Button>
                 </div>
 
-                <div>
-                  <Label className="text-sm font-medium mb-4 block">Tags (Optional)</Label>
-                  <div className="flex flex-wrap gap-3 mb-4">
-                    {["STEM", "Medical", "Research", "AI/ML", "Environmental", "Social Impact"].map((tag) => (
-                      <Badge
-                        key={tag}
-                        variant="outline"
-                        className="cursor-pointer hover:bg-blue-50 rounded-full border-gray-300"
-                      >
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                  <Input
-                    placeholder="Add custom tags separated by commas"
-                    className="rounded-full border-gray-300 h-12"
-                  />
+                <div className="bg-blue-50 p-6 rounded-lg border border-blue-200">
+                  <h4 className="font-medium mb-3">Next Steps</h4>
+                  <ul className="space-y-2 text-sm text-gray-700">
+                    <li>• We will reach out for documentation once you submit your information</li>
+                    <li>• After verification, your profile will be reviewed by our team</li>
+                    <li>• Once approved, your profile will be publicly available on our platform</li>
+                  </ul>
                 </div>
               </div>
             )}
 
             {currentStep === 4 && (
-              <div className="space-y-8">
-                <div>
-                  <CardTitle className="text-2xl font-light mb-4">Verification Documents</CardTitle>
-                  <p className="text-gray-600 mb-8 leading-relaxed">
-                    Upload documents to verify your enrollment and identity.
-                  </p>
-                </div>
-
-                <div className="space-y-8">
-                  <div>
-                    <Label className="text-sm font-medium mb-4 block">Proof of Enrollment (Required)</Label>
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors cursor-pointer">
-                      <FileText className="h-8 w-8 text-gray-400 mx-auto mb-3" />
-                      <p className="text-gray-600 mb-1">Upload enrollment verification</p>
-                      <p className="text-sm text-gray-500">PDF, PNG, JPG up to 10MB</p>
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label className="text-sm font-medium mb-4 block">Academic Transcript (Optional)</Label>
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors cursor-pointer">
-                      <FileText className="h-8 w-8 text-gray-400 mx-auto mb-3" />
-                      <p className="text-gray-600 mb-1">Upload academic transcript</p>
-                      <p className="text-sm text-gray-500">PDF, PNG, JPG up to 10MB</p>
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label className="text-sm font-medium mb-4 block">ID Verification (Optional)</Label>
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors cursor-pointer">
-                      <FileText className="h-8 w-8 text-gray-400 mx-auto mb-3" />
-                      <p className="text-gray-600 mb-1">Upload government ID</p>
-                      <p className="text-sm text-gray-500">PDF, PNG, JPG up to 10MB</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-blue-50 p-6 rounded-lg border border-blue-200">
-                  <h4 className="font-medium mb-3">Verification Process</h4>
-                  <p className="text-sm text-gray-700 leading-relaxed">
-                    Our team will review your documents within 2-3 business days. You'll receive an email notification
-                    once your profile is approved and live.
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {currentStep === 5 && (
               <div className="space-y-8">
                 <div>
                   <CardTitle className="text-2xl font-light mb-4">Wallet Setup</CardTitle>
@@ -411,9 +434,31 @@ export default function StudentRegisterPage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="walletAddress" className="text-sm font-medium">
-                    Wallet Address (USDC compatible)
-                  </Label>
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="walletAddress" className="text-sm font-medium">
+                      Wallet Address (USDC compatible)
+                    </Label>
+                    <TooltipProvider>
+                      <Tooltip delayDuration={200}>
+                        <TooltipTrigger asChild>
+                          <Button variant="ghost" size="icon" className="p-0 h-auto">
+                            <Info className="h-4 w-4 text-gray-400" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent 
+                          side="right" 
+                          align="center" 
+                          className="max-w-[300px] p-4 bg-white shadow-lg rounded-xl border border-gray-200"
+                        >
+                          <p className="text-sm text-gray-700 leading-relaxed">
+                            A wallet address is like your digital bank account number for cryptocurrencies. 
+                            A USDC compatible wallet can receive and store USDC tokens. We recommend using any 
+                            of the supported wallets listed below for the best experience.
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
                   <Input
                     id="walletAddress"
                     placeholder="0x... or leave blank if you need help setting up"
@@ -431,14 +476,25 @@ export default function StudentRegisterPage() {
                     Don't have a crypto wallet yet? No problem! You can complete your profile now and add your wallet
                     address later.
                   </p>
-                  <Button variant="outline" size="sm" className="rounded-full border-gray-300 hover:bg-gray-50">
-                    Contact Support for Help
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="rounded-full border-gray-300 hover:bg-gray-50"
+                    asChild
+                  >
+                    <a 
+                      href="mailto:contact@medici.ac" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                    >
+                      Contact Support for Help
+                    </a>
                   </Button>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-6">
                   <h4 className="font-medium">Supported Wallets:</h4>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div className="grid grid-cols-2 gap-6 text-sm">
                     <div className="flex items-center gap-3">
                       <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
                       MetaMask
@@ -479,8 +535,7 @@ export default function StudentRegisterPage() {
                 </Button>
               ) : (
                 <Button className="rounded-full bg-blue-600 hover:bg-blue-700 text-white px-6" asChild>
-                  <Link href="/dashboard">
-                    <CheckCircle className="mr-2 h-4 w-4" />
+                  <Link href="/register/success">
                     Submit Application
                   </Link>
                 </Button>

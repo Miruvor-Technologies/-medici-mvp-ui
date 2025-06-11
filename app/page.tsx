@@ -32,7 +32,7 @@ export default function HomePage() {
               size="lg"
               className="rounded-full bg-blue-600 hover:bg-blue-700 text-white px-8 py-6 text-lg font-medium"
             >
-              <Link href="/browse">
+              <Link href="/noprofile">
                 <Heart className="mr-2 h-5 w-5" />
                 Fund a Student
               </Link>
@@ -86,7 +86,7 @@ export default function HomePage() {
 </section>
 
       {/* Stats Section */}
-      <section className="py-24">
+      {/* <section className="py-24">
   <div className="container mx-auto px-6">
     <div className="grid md:grid-cols-3 gap-12 text-center max-w-5xl mx-auto">
       {[
@@ -101,7 +101,7 @@ export default function HomePage() {
       ))}
     </div>
   </div>
-</section>
+</section> */}
 
       {/* CTA Section */}
       <section className="bg-gray-50 py-24">

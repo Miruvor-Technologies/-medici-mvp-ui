@@ -9,6 +9,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { Header } from "@/components/ui/header"
 import { students } from "@/utils/sample-data"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 // Removed the mock data for students
 
@@ -21,7 +22,7 @@ export default function BrowseStudentsPage() {
       <div className="container mx-auto px-6 py-12">
         <div className="flex flex-col lg:flex-row gap-12">
           {/* Sidebar Filters */}
-          <aside className="lg:w-80">
+          {/* <aside className="lg:w-80">
             <Card className="border-gray-200">
               <CardContent className="p-6">
                 <h3 className="text-lg font-medium mb-6 flex items-center gap-2">
@@ -100,7 +101,7 @@ export default function BrowseStudentsPage() {
                 </div>
               </CardContent>
             </Card>
-          </aside>
+          </aside> */}
 
           {/* Main Content */}
           <main className="flex-1">
@@ -123,52 +124,123 @@ export default function BrowseStudentsPage() {
                   >
                     <Link href={`/student/${student.id}`}>
                       <CardContent className="p-6">
-                        <div className="flex items-center gap-4 mb-6">
-                          <Image
-                            src={student.photo || "/placeholder.svg"}
-                            alt={student.name}
-                            width={60}
-                            height={60}
-                            className="rounded-full object-cover"
-                          />
-                          <div>
-                            <h3 className="font-medium text-lg group-hover:text-blue-600 transition-colors">
-                              {student.name}
-                            </h3>
-                            <p className="text-sm text-gray-600 flex items-center gap-1">
-                              <MapPin className="h-3 w-3" />
-                              {student.location}
-                            </p>
+                        <div className="flex items-center justify-between mb-8">
+                          <div className="flex items-center gap-4">
+                            <Image
+                              src={student.photo}
+                              alt={student.name}
+                              width={64}
+                              height={64}
+                              className="rounded-full object-cover w-16 h-16"
+                            />
+                            <div>
+                              <h3 className="font-medium mb-1">{student.name}</h3>
+                              <p className="text-sm text-gray-600">
+                                {student.program} at {student.university}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <TooltipProvider>
+                              <Tooltip delayDuration={200}>
+                                <TooltipTrigger asChild>
+                                  <Badge 
+                                    variant="secondary" 
+                                    className={`h-7 px-3 rounded-full cursor-help ${
+                                      student.funded > 30000 
+                                        ? "bg-yellow-50 text-yellow-700 border-yellow-200" 
+                                        : student.funded > 15000 
+                                          ? "bg-gray-50 text-gray-700 border-gray-200" 
+                                          : "bg-orange-50 text-orange-700 border-orange-200"
+                                    }`}
+                                  >
+                                    <div className="flex items-center gap-1 text-sm">
+                                      {student.funded > 30000 ? (
+                                        <>⭐ Top</>
+                                      ) : student.funded > 15000 ? (
+                                        <>↗ Rising</>
+                                      ) : (
+                                        <>🌱 Early</>
+                                      )}
+                                    </div>
+                                  </Badge>
+                                </TooltipTrigger>
+                                <TooltipContent 
+                                  side="right" 
+                                  align="center" 
+                                  className="max-w-[250px] p-4 bg-white shadow-lg rounded-xl border border-gray-200"
+                                >
+                                  <div className="space-y-2 text-sm">
+                                    <p className="font-medium text-gray-900">
+                                      {student.funded > 30000 ? "Top Student" : student.funded > 15000 ? "Rising Student" : "Early Supporter"}
+                                    </p>
+                                    <div className="space-y-1 text-gray-600">
+                                      {student.funded > 30000 ? (
+                                        <>
+                                          <p>• Over 10 profile visits daily</p>
+                                          <p>• More than 5 active donors</p>
+                                          <p>• High engagement rate</p>
+                                        </>
+                                      ) : student.funded > 15000 ? (
+                                        <>
+                                          <p>• Growing profile visits</p>
+                                          <p>• 2-5 active donors</p>
+                                          <p>• Regular updates</p>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <p>• New to the platform</p>
+                                          <p>• Verified profile</p>
+                                          <p>• Seeking first donors</p>
+                                        </>
+                                      )}
+                                    </div>
+                                  </div>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+
+                            <TooltipProvider>
+                              <Tooltip delayDuration={200}>
+                                <TooltipTrigger asChild>
+                                  {/* <Badge 
+                                    variant="secondary" 
+                                    className="h-7 px-3 rounded-full cursor-help bg-green-50 text-green-700 border-green-200"
+                                  >
+                                    <div className="flex items-center gap-1 text-sm">
+                                      ✓ Verified
+                                    </div>
+                                  </Badge> */}
+                                </TooltipTrigger>
+                                <TooltipContent 
+                                  side="right" 
+                                  align="center" 
+                                  className="max-w-[300px] p-4 bg-white shadow-lg rounded-xl border border-gray-200"
+                                >
+                                  <div className="space-y-3 text-sm">
+                                    <p className="text-gray-700">Documents verified by Medici. You can view any document by contacting us.</p>
+                                    <Button 
+                                      size="sm" 
+                                      variant="outline" 
+                                      className="w-full rounded-full"
+                                      asChild
+                                    >
+                                      <a href="mailto:contact@medici.ac">Contact for Documents</a>
+                                    </Button>
+                                  </div>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
                           </div>
                         </div>
 
-                        <div className="mb-6">
-                          <p className="font-medium">{student.program}</p>
-                          <p className="text-sm text-gray-600">{student.university}</p>
-                        </div>
-
-                        <div className="mb-6">
-                          <div className="flex justify-between text-sm mb-2">
-                            <span className="text-gray-600">Progress</span>
-                            <span className="font-medium">{fundedPercentage.toFixed(0)}%</span>
+                        <div className="text-center mb-8">
+                          <div className="text-3xl font-light text-gray-900 mb-2">
+                            ${student.goal.toLocaleString()}
                           </div>
-                          <Progress value={fundedPercentage} className="h-2" />
-                          <div className="flex justify-between text-sm mt-2 text-gray-600">
-                            <span>${student.funded.toLocaleString()} raised</span>
-                            <span>${student.goal.toLocaleString()} goal</span>
+                          <div className="text-sm text-gray-600">
+                            Funding Goal
                           </div>
-                        </div>
-
-                        <div className="flex flex-wrap gap-2 mb-6">
-                          {student.tags.map((tag) => (
-                            <Badge
-                              key={tag}
-                              variant="secondary"
-                              className="text-xs rounded-full bg-blue-50 text-blue-700 border-blue-200"
-                            >
-                              {tag}
-                            </Badge>
-                          ))}
                         </div>
 
                         <p className="text-sm text-gray-600 line-clamp-2 mb-6">{student.statement}</p>
