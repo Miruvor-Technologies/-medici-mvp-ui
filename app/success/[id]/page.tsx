@@ -6,11 +6,15 @@ import Link from "next/link"
 import Image from "next/image"
 import { Header } from "@/components/ui/header"
 import { Footer } from "@/components/ui/footer"
-import { getStudentById } from "@/utils/sample-data"
+import { supabase } from '@/lib/supabaseClient'
 
-export default function SuccessPage({ params }: { params: { id: string } }) {
-  const studentId = parseInt(params.id)
-  const student = getStudentById(studentId)
+export default async function SuccessPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const { data: student, error } = await supabase
+    .from('student_profiles')
+    .select('*')
+    .eq('id', id)
+    .single()
 
   // Mock transaction data - you can replace this with real data
   const transactionData = {
@@ -44,7 +48,7 @@ export default function SuccessPage({ params }: { params: { id: string } }) {
         </div>
 
         <h1 className="text-4xl md:text-5xl font-light text-gray-900 mb-6 leading-tight">
-          Your funds are on the way to {student.name}!
+          Your funds are on the way to {student.fullName}!
         </h1>
         <p className="text-xl text-gray-600 mb-12 font-light leading-relaxed">
           Your ${transactionData.amount} USDC contribution is being processed on the blockchain
@@ -54,14 +58,14 @@ export default function SuccessPage({ params }: { params: { id: string } }) {
           <CardContent className="p-6">
             <div className="flex items-center gap-6">
               <Image
-                src={student.photo}
-                alt={student.name}
+                src={student.photo || "/placeholder.svg"}
+                alt={student.fullName}
                 width={80}
                 height={80}
                 className="rounded-full object-cover w-20 h-20"
               />
               <div className="text-left">
-                <h3 className="text-xl font-medium">{student.name}</h3>
+                <h3 className="text-xl font-medium">{student.fullName}</h3>
                 <p className="text-gray-600 mb-2">
                   {student.program} at {student.university}
                 </p>
@@ -104,7 +108,7 @@ export default function SuccessPage({ params }: { params: { id: string } }) {
           <CardContent className="p-6">
             <h3 className="font-medium mb-3">Want updates on your student's progress?</h3>
             <p className="text-gray-600 mb-4 leading-relaxed">
-              Get notified when {student.name} posts updates about their journey
+              Get notified when {student.fullName} posts updates about their journey
             </p>
             <div className="flex gap-3">
               <Input type="email" placeholder="Enter your email" className="flex-1 rounded-full border-gray-300 h-12" />

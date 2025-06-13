@@ -1,16 +1,23 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, use } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, Wallet, Shield, Zap, Loader2 } from "lucide-react"
-import { getStudentById } from "@/utils/sample-data"
+import { createClient } from '@supabase/supabase-js'
 import Link from "next/link"
 import Image from "next/image"
 import { Footer } from "@/components/ui/footer"
+
+// Create client-side Supabase client with proper error handling
+const supabaseUrl = 'https://wodwfpewcejhwuunbonj.supabase.co'
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndvZHdmcGV3Y2VqaHd1dW5ib25qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg3NzU2ODgsImV4cCI6MjA2NDM1MTY4OH0.IvTv0zncW8rvpmWqqJRxKjQ7uVFO6OyORVrCsVZ4lOw'
+
+// Initialize Supabase client
+const supabase = createClient(supabaseUrl, supabaseKey)
 
 // Extend Window interface for MetaMask
 declare global {
@@ -22,15 +29,55 @@ declare global {
   }
 }
 
-export default function PledgePage({ params }: { params: { id: string } }) {
-  const studentId = parseInt(params.id)
-  const student = getStudentById(studentId)
-
+export default function PledgePage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = use(params)
+  const [student, setStudent] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
   const [isConnecting, setIsConnecting] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
   const [pledgeAmount, setPledgeAmount] = useState("")
   const [message, setMessage] = useState("")
   const [isClient, setIsClient] = useState(false)
+
+  // Fetch student data from Supabase
+  useEffect(() => {
+    const fetchStudent = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('student_profiles')
+          .select('*')
+          .eq('id', resolvedParams.id)
+          .single()
+
+        if (error) {
+          console.error('Supabase error:', error)
+        } else if (data) {
+          setStudent(data)
+          // Log wallet address
+          console.log('Student Wallet Address:', data.walletAddress)
+        }
+      } catch (error) {
+        console.error('Error fetching student:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchStudent()
+    setIsClient(true)
+  }, [resolvedParams.id])
+
+  // If loading, show loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Loading student profile...</p>
+        </div>
+      </div>
+    )
+  }
 
   // If no student is found, show error state
   if (!student) {
@@ -46,11 +93,6 @@ export default function PledgePage({ params }: { params: { id: string } }) {
       </div>
     )
   }
-
-  // Ensure we're on the client side before accessing window
-  useEffect(() => {
-    setIsClient(true)
-  }, [])
 
   const handleQuickAmount = (amount: number) => {
     setPledgeAmount(amount.toString())
@@ -87,9 +129,9 @@ export default function PledgePage({ params }: { params: { id: string } }) {
       setIsConnecting(false)
       setIsProcessing(true)
 
-      // Simplified mock transaction - just send a small amount of ETH
+      // Use the student's wallet address from the database
       const transactionParams = {
-        to: '0x420AeF56973233F735B9501F234b31ff5c47bE62', // Mock recipient address
+        to: student.walletAddress || '0x420AeF56973233F735B9501F234b31ff5c47bE62', // Use student's wallet or fallback
         from: account,
         value: '0x5AF3107A4000', // 0.0001 ETH in wei (hex)
         gas: '0x5208', // 21000 gas limit
@@ -108,7 +150,7 @@ export default function PledgePage({ params }: { params: { id: string } }) {
 
       // Redirect to success page with student ID
       if (typeof window !== 'undefined') {
-        window.location.href = `/success/${studentId}`
+        window.location.href = `/success/${resolvedParams.id}`
       }
 
     } catch (error: any) {
@@ -166,23 +208,23 @@ export default function PledgePage({ params }: { params: { id: string } }) {
           <CardContent className="p-6">
             <div className="flex items-center gap-6">
               <Image
-                src={student.photo}
-                alt={student.name}
+                src={student.photo || '/default-avatar.png'}
+                alt={student.fullName}
                 width={80}
                 height={80}
                 className="rounded-full object-cover w-20 h-20"
               />
               <div>
-                <h2 className="text-2xl font-light">{student.name}</h2>
+                <h2 className="text-2xl font-light">{student.fullName}</h2>
                 <p className="text-gray-600 mb-2">
                   {student.program} at {student.university}
                 </p>
                 <div className="flex items-center gap-4 text-sm">
                   <span className="text-gray-600">
-                    ${student.funded.toLocaleString()} raised of ${student.goal.toLocaleString()}
+                    $0 raised of ${student.fundsRequested ? student.fundsRequested.toLocaleString() : 'N/A'}
                   </span>
                   <Badge variant="secondary" className="rounded-full bg-blue-50 text-blue-700 border-blue-200">
-                    ${(student.goal - student.funded).toLocaleString()} remaining
+                    ${student.fundsRequested ? student.fundsRequested.toLocaleString() : 'N/A'} remaining
                   </Badge>
                 </div>
               </div>
@@ -193,7 +235,7 @@ export default function PledgePage({ params }: { params: { id: string } }) {
         {/* Pledge Form */}
         <Card className="border-gray-200">
           <CardHeader>
-            <CardTitle className="text-3xl font-light text-center">Support {student.name}</CardTitle>
+            <CardTitle className="text-3xl font-light text-center">Support {student.fullName}</CardTitle>
             <p className="text-center text-gray-600 font-light">Your contribution will directly fund their education</p>
           </CardHeader>
           <CardContent className="space-y-8">
@@ -234,7 +276,7 @@ export default function PledgePage({ params }: { params: { id: string } }) {
 
             {/* Optional Message */}
             <div>
-              <label className="text-sm font-medium mb-3 block">Message for {student.name} (Optional)</label>
+              <label className="text-sm font-medium mb-3 block">Message for {student.fullName} (Optional)</label>
               <Textarea
                 placeholder="Write an encouraging message..."
                 value={message}

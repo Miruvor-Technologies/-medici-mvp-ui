@@ -32,7 +32,7 @@ export default function HomePage() {
               size="lg"
               className="rounded-full bg-blue-600 hover:bg-blue-700 text-white px-8 py-6 text-lg font-medium"
             >
-              <Link href="/noprofile">
+              <Link href="/browse">
                 <Heart className="mr-2 h-5 w-5" />
                 Fund a Student
               </Link>
