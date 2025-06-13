@@ -12,9 +12,9 @@ import Link from "next/link"
 import Image from "next/image"
 import { Footer } from "@/components/ui/footer"
 
-// Create client-side Supabase client with proper error handling
-const supabaseUrl = 'https://wodwfpewcejhwuunbonj.supabase.co'
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndvZHdmcGV3Y2VqaHd1dW5ib25qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg3NzU2ODgsImV4cCI6MjA2NDM1MTY4OH0.IvTv0zncW8rvpmWqqJRxKjQ7uVFO6OyORVrCsVZ4lOw'
+// Create client-side Supabase client using environment variables
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
 // Initialize Supabase client
 const supabase = createClient(supabaseUrl, supabaseKey)
