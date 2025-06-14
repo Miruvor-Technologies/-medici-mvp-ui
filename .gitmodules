@@ -1,0 +1,3 @@
+[submodule "lib/medici-sdk"]
+	path = lib/medici-sdk
+	url = https://github.com/Miruvor-Technologies/Medici-SDK.git
