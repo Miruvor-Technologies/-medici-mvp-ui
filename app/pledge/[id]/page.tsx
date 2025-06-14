@@ -11,6 +11,8 @@ import { createClient } from '@supabase/supabase-js'
 import Link from "next/link"
 import Image from "next/image"
 import { Footer } from "@/components/ui/footer"
+import { Connection, PublicKey } from "@solana/web3.js"
+import { MediciClient } from "@/lib/medici-sdk/src/index"
 
 // Create client-side Supabase client using environment variables
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -19,12 +21,20 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 // Initialize Supabase client
 const supabase = createClient(supabaseUrl, supabaseKey)
 
-// Extend Window interface for MetaMask
+// Solana configuration
+const SOLANA_RPC_URL = "https://api.devnet.solana.com" // Using devnet for testing
+const MINT_ADDRESS = "veTsw5aZBnxMqwaAioaveRoNv9PDyjAbmaV9CLfb6cy" // Your token mint address
+
+// Extend Window interface for Phantom wallet
 declare global {
   interface Window {
-    ethereum?: {
-      request: (args: { method: string; params?: any[] }) => Promise<any>
-      isMetaMask?: boolean
+    solana?: {
+      isPhantom?: boolean
+      connect: () => Promise<{ publicKey: PublicKey }>
+      disconnect: () => Promise<void>
+      signTransaction: (transaction: any) => Promise<any>
+      signMessage: (message: Uint8Array) => Promise<{ signature: Uint8Array }>
+      publicKey: PublicKey | null
     }
   }
 }
@@ -38,6 +48,13 @@ export default function PledgePage({ params }: { params: Promise<{ id: string }>
   const [pledgeAmount, setPledgeAmount] = useState("")
   const [message, setMessage] = useState("")
   const [isClient, setIsClient] = useState(false)
+  const [walletConnected, setWalletConnected] = useState(false)
+  const [walletAddress, setWalletAddress] = useState<string>("")
+  const [transactionData, setTransactionData] = useState<{
+    amount: string
+    hash: string
+    status: string
+  } | null>(null)
 
   // Fetch student data from Supabase
   useEffect(() => {
@@ -66,6 +83,14 @@ export default function PledgePage({ params }: { params: Promise<{ id: string }>
     fetchStudent()
     setIsClient(true)
   }, [resolvedParams.id])
+
+  // Check if wallet is already connected
+  useEffect(() => {
+    if (isClient && window.solana && window.solana.publicKey) {
+      setWalletConnected(true)
+      setWalletAddress(window.solana.publicKey.toString())
+    }
+  }, [isClient])
 
   // If loading, show loading state
   if (loading) {
@@ -98,73 +123,167 @@ export default function PledgePage({ params }: { params: Promise<{ id: string }>
     setPledgeAmount(amount.toString())
   }
 
-  const connectWalletAndFund = async () => {
-    // Only proceed if we're on the client side
-    if (!isClient) {
-      return
-    }
+  const connectSolanaWallet = async () => {
+    if (!isClient) return
 
     try {
       setIsConnecting(true)
       
-      // Check if MetaMask is installed
-      if (typeof window === 'undefined' || typeof window.ethereum === 'undefined') {
-        alert('MetaMask is not installed. Please install MetaMask to continue.')
+      // Check if Phantom wallet is installed
+      if (typeof window === 'undefined' || !window.solana || !window.solana.isPhantom) {
+        alert('Phantom wallet is not installed. Please install Phantom wallet to continue.')
+        console.error('Phantom wallet not found')
         return
       }
 
-      // Request account access
-      const accounts = await window.ethereum.request({
-        method: 'eth_requestAccounts'
-      })
-
-      if (accounts.length === 0) {
-        alert('No accounts found. Please unlock MetaMask.')
-        return
-      }
-
-      const account = accounts[0]
-      console.log('Connected account:', account)
-
-      setIsConnecting(false)
-      setIsProcessing(true)
-
-      // Use the student's wallet address from the database
-      const transactionParams = {
-        to: student.walletAddress || '0x420AeF56973233F735B9501F234b31ff5c47bE62', // Use student's wallet or fallback
-        from: account,
-        value: '0x5AF3107A4000', // 0.0001 ETH in wei (hex)
-        gas: '0x5208', // 21000 gas limit
-      }
-
-      // Request transaction signature
-      const txHash = await window.ethereum.request({
-        method: 'eth_sendTransaction',
-        params: [transactionParams],
-      })
-
-      console.log('Transaction hash:', txHash)
-
-      // Wait for 3 seconds to simulate transaction processing
-      await new Promise(resolve => setTimeout(resolve, 3000))
-
-      // Redirect to success page with student ID
-      if (typeof window !== 'undefined') {
-        window.location.href = `/success/${resolvedParams.id}`
-      }
-
-    } catch (error: any) {
-      console.error('Wallet connection or transaction failed:', error)
+      // Connect to wallet
+      const response = await window.solana.connect()
+      console.log('Connected to wallet:', response.publicKey.toString())
       
-      if (error.code === 4001) {
-        alert('Transaction was rejected by user.')
-      } else if (error.code === -32602) {
-        alert('Invalid transaction parameters.')
-      } else {
-        alert('An error occurred. Please try again.')
-      }
+      setWalletConnected(true)
+      setWalletAddress(response.publicKey.toString())
+      
+    } catch (error: any) {
+      console.error('Wallet connection failed:', error)
+      alert('Failed to connect wallet. Please try again.')
     } finally {
       setIsConnecting(false)
+    }
+  }
+
+  const sendFundsToStudent = async () => {
+    if (!isClient || !walletConnected || !window.solana || !window.solana.publicKey) {
+      alert('Please connect your wallet first.')
+      return
+    }
+
+    if (!pledgeAmount || parseFloat(pledgeAmount) <= 0) {
+      alert('Please enter a valid amount.')
+      return
+    }
+
+    if (!student.walletAddress) {
+      alert('Student wallet address not found.')
+      console.error('Student wallet address missing:', student)
+      return
+    }
+
+    try {
+      setIsProcessing(true)
+      console.log('Starting transaction process...')
+      console.log('Donor wallet:', window.solana.publicKey.toString())
+      console.log('Student wallet:', student.walletAddress)
+      console.log('Amount:', pledgeAmount)
+      console.log('Mint address:', MINT_ADDRESS)
+
+      // Create Solana connection
+      const connection = new Connection(SOLANA_RPC_URL, 'confirmed')
+      console.log('Solana connection created')
+
+      // Create wallet adapter for Medici SDK
+      const walletAdapter = {
+        publicKey: window.solana.publicKey,
+        signTransaction: async (transaction: any) => {
+          return await window.solana!.signTransaction(transaction)
+        },
+        signMessage: async (message: Uint8Array) => {
+          const result = await window.solana!.signMessage(message)
+          return result.signature
+        }
+      }
+
+      // Initialize Medici client
+      const mediciClient = new MediciClient(connection, walletAdapter)
+      console.log('Medici client initialized')
+
+             // Use the amount directly as tokens (not converting to smallest unit)
+       const tokenAmount = Math.floor(parseFloat(pledgeAmount))
+       console.log('Token amount:', tokenAmount)
+
+       // Validate and create PublicKey objects with error handling
+       let mintPublicKey: PublicKey
+       let studentPublicKey: PublicKey
+       
+       try {
+         mintPublicKey = new PublicKey(MINT_ADDRESS)
+         console.log('Mint PublicKey created successfully:', mintPublicKey.toString())
+       } catch (error) {
+         console.error('Invalid mint address:', MINT_ADDRESS, error)
+         throw new Error('Invalid mint address configuration')
+       }
+       
+       try {
+         // Clean the wallet address (remove any whitespace/invalid characters)
+         const cleanWalletAddress = student.walletAddress.trim()
+         studentPublicKey = new PublicKey(cleanWalletAddress)
+         console.log('Student PublicKey created successfully:', studentPublicKey.toString())
+       } catch (error) {
+         console.error('Invalid student wallet address:', student.walletAddress, error)
+         throw new Error('Invalid student wallet address')
+       }
+      
+             console.log('Calling sendAmountFromDonorToStudent...')
+       console.log('Parameters:', {
+         tokenAmount,
+         mintAddress: mintPublicKey.toString(),
+         studentAddress: studentPublicKey.toString(),
+         donorAddress: window.solana.publicKey.toString()
+       })
+
+      //  await mediciClient.initializeFeesConfigurationAccount()
+       
+       // Send transaction using Medici SDK
+       const txHash = await mediciClient.sendAmountFromDonorToStudent(
+         tokenAmount,
+         mintPublicKey,
+         studentPublicKey
+       )
+
+       console.log('Transaction successful! Hash:', txHash)
+       console.log('Transaction details:', {
+         hash: txHash,
+         amount: tokenAmount,
+         from: window.solana.publicKey.toString(),
+         to: studentPublicKey.toString(),
+         mint: mintPublicKey.toString()
+       })
+
+      // Set transaction data for display
+      setTransactionData({
+        amount: pledgeAmount,
+        hash: txHash,
+        status: 'Confirmed'
+      })
+
+      // Wait a bit then redirect to success page
+      setTimeout(() => {
+        if (typeof window !== 'undefined') {
+          window.location.href = `/success/${resolvedParams.id}`
+        }
+      }, 3000)
+
+         } catch (error: any) {
+       console.error('Transaction failed:', error)
+       console.error('Error details:', {
+         message: error.message,
+         code: error.code,
+         stack: error.stack,
+         logs: error.logs || 'No logs available'
+       })
+       
+       // Log the full error object for debugging
+       console.error('Full error object:', JSON.stringify(error, null, 2))
+      
+             let errorMessage = 'Transaction failed. Please try again.'
+       
+       if (error.message?.includes('User rejected') || error.message?.includes('user rejected')) {
+         errorMessage = 'Transaction was rejected by user.'
+       } else if (error.message?.includes('insufficient funds')) {
+         errorMessage = 'Insufficient funds in your wallet.'
+       }
+      
+      alert(errorMessage)
+    } finally {
       setIsProcessing(false)
     }
   }
@@ -173,16 +292,16 @@ export default function PledgePage({ params }: { params: Promise<{ id: string }>
     <div className="min-h-screen bg-white">
       {/* Header */}
       <header className="border-b border-gray-100 bg-white sticky top-0 z-50">
-             <div className="container mx-auto px-6 py-0 flex items-center justify-between h-16">
-              <Link href="/" className="flex items-center">
-                <Image
-                  src="/images/medici-logo.svg"
-                  alt="Medici"
-                  width={200}
-                  height={64}
-                  className="h-14 w-auto"
-                />
-              </Link>
+        <div className="container mx-auto px-6 py-0 flex items-center justify-between h-16">
+          <Link href="/" className="flex items-center">
+            <Image
+              src="/images/medici-logo.svg"
+              alt="Medici"
+              width={200}
+              height={64}
+              className="h-14 w-auto"
+            />
+          </Link>
           <Button variant="outline" className="rounded-full border-gray-300 hover:bg-gray-50">
             Sign In
           </Button>
@@ -200,190 +319,181 @@ export default function PledgePage({ params }: { params: Promise<{ id: string }>
           className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 mb-8 transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to Profile
+          Back
         </button>
 
-        {/* Student Summary - Updated to use dynamic data */}
+        {/* Transaction Success Display */}
+        {transactionData && (
+          <Card className="mb-8 border-green-200 bg-green-50">
+            <CardContent className="p-6">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Shield className="h-8 w-8 text-green-600" />
+                </div>
+                <h3 className="text-xl font-medium text-green-900 mb-2">Transaction Successful!</h3>
+                <p className="text-green-700 mb-4">Your ${transactionData.amount} USDC has been sent to {student.fullName}</p>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-green-600">Amount:</span>
+                    <span className="font-medium">${transactionData.amount} USDC</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-green-600">Transaction Hash:</span>
+                    <span className="font-mono text-xs text-green-800 break-all">{transactionData.hash}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-green-600">Status:</span>
+                    <span className="text-green-800 font-medium">{transactionData.status}</span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Student Info */}
         <Card className="mb-8 border-gray-200">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-6">
+          <CardContent className="p-8">
+            <div className="flex items-center gap-6 mb-6">
               <Image
-                src={student.photo || '/default-avatar.png'}
+                src={student.photo || "/placeholder.svg"}
                 alt={student.fullName}
                 width={80}
                 height={80}
                 className="rounded-full object-cover w-20 h-20"
               />
               <div>
-                <h2 className="text-2xl font-light">{student.fullName}</h2>
-                <p className="text-gray-600 mb-2">
-                  {student.program} at {student.university}
-                </p>
-                <div className="flex items-center gap-4 text-sm">
-                  <span className="text-gray-600">
-                    $0 raised of ${student.fundsRequested ? student.fundsRequested.toLocaleString() : 'N/A'}
-                  </span>
-                  <Badge variant="secondary" className="rounded-full bg-blue-50 text-blue-700 border-blue-200">
-                    ${student.fundsRequested ? student.fundsRequested.toLocaleString() : 'N/A'} remaining
-                  </Badge>
-                </div>
+                <h1 className="text-2xl font-medium text-gray-900 mb-1">{student.fullName}</h1>
+                <p className="text-gray-600 mb-2">{student.program} at {student.university}</p>
+                <Badge variant="secondary" className="rounded-full">
+                  Goal: ${student.fundsRequested ? student.fundsRequested.toLocaleString() : 'N/A'}
+                </Badge>
               </div>
             </div>
+            <p className="text-gray-700 leading-relaxed">{student.quickBio || 'No bio available.'}</p>
           </CardContent>
         </Card>
 
-        {/* Pledge Form */}
-        <Card className="border-gray-200">
-          <CardHeader>
-            <CardTitle className="text-3xl font-light text-center">Support {student.fullName}</CardTitle>
-            <p className="text-center text-gray-600 font-light">Your contribution will directly fund their education</p>
-          </CardHeader>
-          <CardContent className="space-y-8">
-            {/* Amount Input */}
-            <div>
-              <label className="text-sm font-medium mb-3 block">Pledge Amount (USDC)</label>
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
-                <Input
-                  type="number"
-                  placeholder="0.00"
-                  value={pledgeAmount}
-                  onChange={(e) => setPledgeAmount(e.target.value)}
-                  className="pl-8 text-lg h-14 rounded-full border-gray-300"
-                  min="1"
-                  step="0.01"
-                />
-              </div>
-              <p className="text-xs text-gray-500 mt-2">Minimum pledge: $1 USDC</p>
-            </div>
-
-            {/* Quick Amount Buttons */}
-            <div>
-              <label className="text-sm font-medium mb-3 block">Quick amounts</label>
-              <div className="grid grid-cols-4 gap-3">
-                {[25, 50, 100, 250].map((amount) => (
-                  <Button 
-                    key={amount} 
-                    variant="outline" 
-                    className="h-12 rounded-full border-gray-300 hover:bg-gray-50"
-                    onClick={() => handleQuickAmount(amount)}
-                  >
-                    ${amount}
-                  </Button>
-                ))}
-              </div>
-            </div>
-
-            {/* Optional Message */}
-            <div>
-              <label className="text-sm font-medium mb-3 block">Message for {student.fullName} (Optional)</label>
-              <Textarea
-                placeholder="Write an encouraging message..."
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                className="min-h-[100px] border-gray-300 rounded-lg"
-              />
-            </div>
-
-            {/* Security Features */}
-            <div className="bg-blue-50 p-6 rounded-lg border border-blue-200">
-              <h4 className="font-medium mb-4 flex items-center gap-2">
-                <Shield className="h-5 w-5 text-blue-600" />
-                Secure & Transparent
-              </h4>
-              <div className="space-y-3 text-sm text-gray-700">
+        {/* Wallet Connection */}
+        {!walletConnected ? (
+          <Card className="mb-8 border-gray-200">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Wallet className="h-5 w-5" />
+                Connect Your Solana Wallet
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600 mb-6">Connect your Phantom wallet to send USDC to {student.fullName}</p>
+              <Button
+                onClick={connectSolanaWallet}
+                disabled={isConnecting}
+                className="w-full rounded-full bg-purple-600 hover:bg-purple-700 text-white h-12"
+              >
+                {isConnecting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Connecting...
+                  </>
+                ) : (
+                  <>
+                    <Wallet className="mr-2 h-4 w-4" />
+                    Connect Phantom Wallet
+                  </>
+                )}
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <>
+            {/* Wallet Connected */}
+            <Card className="mb-8 border-green-200 bg-green-50">
+              <CardContent className="p-6">
                 <div className="flex items-center gap-3">
-                  <Zap className="h-4 w-4 text-blue-600" />
-                  <span>100% on-chain transaction</span>
+                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                  <span className="font-medium text-green-900">Wallet Connected</span>
                 </div>
-                <div className="flex items-center gap-3">
-                  <Shield className="h-4 w-4 text-blue-600" />
-                  <span>Funds go directly to student</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Wallet className="h-4 w-4 text-blue-600" />
-                  <span>No platform fees</span>
-                </div>
-              </div>
-            </div>
+                <p className="text-sm text-green-700 mt-1 font-mono break-all">{walletAddress}</p>
+              </CardContent>
+            </Card>
 
-            {/* Fund Button */}
-            <Button
-              size="lg"
-              className="w-full h-14 text-lg rounded-full bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
-              onClick={connectWalletAndFund}
-              disabled={isConnecting || isProcessing || !pledgeAmount || parseFloat(pledgeAmount) < 1}
-            >
-              {isConnecting ? (
-                <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Connecting Wallet...
-                </>
-              ) : isProcessing ? (
-                <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Processing Transaction...
-                </>
-              ) : (
-                <>
-                  <Wallet className="mr-2 h-5 w-5" />
-                  Connect Wallet & Fund
-                </>
-              )}
-            </Button>
-
-            <p className="text-xs text-gray-500 text-center leading-relaxed">
-              By clicking "Connect Wallet & Fund", you agree to our Terms of Service and Privacy Policy. Your wallet
-              will open to complete the USDC transaction.
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* How it Works */}
-        <Card className="mt-8 border-gray-200">
-          <CardHeader>
-            <CardTitle className="text-xl font-light">How it works</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-6">
-              <div className="flex gap-4">
-                <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-medium">
-                  1
-                </div>
+            {/* Funding Form */}
+            <Card className="mb-8 border-gray-200">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Zap className="h-5 w-5" />
+                  Send USDC to {student.fullName}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
                 <div>
-                  <h4 className="font-medium mb-1">Connect your wallet</h4>
-                  <p className="text-sm text-gray-600 leading-relaxed">
-                    We'll prompt you to connect your crypto wallet (MetaMask, Phantom, etc.)
+                  <label className="block text-sm font-medium mb-3">Amount (USDC)</label>
+                  <Input
+                    type="number"
+                    value={pledgeAmount}
+                    onChange={(e) => setPledgeAmount(e.target.value)}
+                    placeholder="Enter amount"
+                    className="rounded-full border-gray-300 h-12 text-lg"
+                    min="0"
+                    step="0.01"
+                  />
+                  <div className="flex gap-2 mt-3">
+                    {[25, 50, 100, 250].map((amount) => (
+                      <Button
+                        key={amount}
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleQuickAmount(amount)}
+                        className="rounded-full border-gray-300 hover:bg-gray-50"
+                      >
+                        ${amount}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-3">Message (Optional)</label>
+                  <Textarea
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    placeholder="Leave a message for the student..."
+                    className="border-gray-300 rounded-lg"
+                    rows={3}
+                  />
+                </div>
+
+                <Button
+                  onClick={sendFundsToStudent}
+                  disabled={isProcessing || !pledgeAmount}
+                  className="w-full rounded-full bg-blue-600 hover:bg-blue-700 text-white h-12 text-lg"
+                >
+                  {isProcessing ? (
+                    <>
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      Processing Transaction...
+                    </>
+                  ) : (
+                    <>
+                      <Zap className="mr-2 h-5 w-5" />
+                      Send ${pledgeAmount || '0'} USDC
+                    </>
+                  )}
+                </Button>
+
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                  <p className="text-sm text-blue-800">
+                    <Shield className="inline h-4 w-4 mr-1" />
+                    Secure transaction powered by Solana blockchain
                   </p>
                 </div>
-              </div>
-              <div className="flex gap-4">
-                <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-medium">
-                  2
-                </div>
-                <div>
-                  <h4 className="font-medium mb-1">Approve the transaction</h4>
-                  <p className="text-sm text-gray-600 leading-relaxed">Confirm the USDC transfer in your wallet</p>
-                </div>
-              </div>
-              <div className="flex gap-4">
-                <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-medium">
-                  3
-                </div>
-                <div>
-                  <h4 className="font-medium mb-1">Funds transferred</h4>
-                  <p className="text-sm text-gray-600 leading-relaxed">
-                    Your contribution goes directly to the student's wallet
-                  </p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          </>
+        )}
       </div>
 
-      {/* Footer */}
-      <Footer/>
+      <Footer />
     </div>
   )
 }
