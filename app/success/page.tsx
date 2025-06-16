@@ -6,9 +6,23 @@ import Link from "next/link"
 import Image from "next/image"
 import { Header } from "@/components/ui/header"
 import { Footer } from "@/components/ui/footer"
+import { useSearchParams } from "next/navigation"
+import { Suspense } from "react"
 
-
-export default function SuccessPage() {
+function SuccessPageContent() {
+  const searchParams = useSearchParams()
+  
+  // Get transaction data from URL parameters
+  const transactionData = {
+    amount: searchParams.get('amount') || '0',
+    hash: searchParams.get('hash') || '',
+    student: {
+      name: searchParams.get('student') || 'Student',
+      program: searchParams.get('program') || 'Program',
+      university: searchParams.get('university') || 'University',
+      photo: searchParams.get('photo') || '/placeholder.svg'
+    }
+  }
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
@@ -22,10 +36,10 @@ export default function SuccessPage() {
 
         {/* Success Message */}
         <h1 className="text-4xl md:text-5xl font-light text-gray-900 mb-6 leading-tight">
-          Your funds are on the way to {student.name}!
+          Your funds are on the way to {transactionData.student.name}!
         </h1>
         <p className="text-xl text-gray-600 mb-12 font-light leading-relaxed">
-          Your ${student.amount} USDC contribution is being processed on the blockchain
+          Your ${transactionData.amount} USDC contribution is being processed on the blockchain
         </p>
 
         {/* Student Card */}
@@ -33,20 +47,20 @@ export default function SuccessPage() {
           <CardContent className="p-6">
             <div className="flex items-center gap-6">
               <Image
-                src={student.photo || "/placeholder.svg"}
-                alt={student.name}
+                src={transactionData.student.photo || "/placeholder.svg"}
+                alt={transactionData.student.name}
                 width={80}
                 height={80}
                 className="rounded-full object-cover"
               />
               <div className="text-left">
-                <h3 className="text-xl font-medium">{student.name}</h3>
+                <h3 className="text-xl font-medium">{transactionData.student.name}</h3>
                 <p className="text-gray-600 mb-2">
-                  {student.program} at {student.university}
+                  {transactionData.student.program} at {transactionData.student.university}
                 </p>
                 <div className="flex items-center gap-2">
                   <Heart className="h-4 w-4 text-blue-600" />
-                  <span className="text-sm text-gray-600">You contributed ${student.amount}</span>
+                  <span className="text-sm text-gray-600">You contributed ${transactionData.amount}</span>
                 </div>
               </div>
             </div>
@@ -60,15 +74,15 @@ export default function SuccessPage() {
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-600">Amount:</span>
-                <span className="font-medium">${student.amount} USDC</span>
+                <span className="font-medium">${transactionData.amount} USDC</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Transaction Hash:</span>
-                <span className="font-mono text-xs text-blue-600">0x1234...5678</span>
+                <span className="font-mono text-xs text-blue-600 break-all">{transactionData.hash}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Network:</span>
-                <span className="font-medium">Ethereum</span>
+                <span className="font-medium">Solana</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Status:</span>
@@ -83,7 +97,7 @@ export default function SuccessPage() {
           <CardContent className="p-6">
             <h3 className="font-medium mb-3">Want updates on your student's progress?</h3>
             <p className="text-gray-600 mb-4 leading-relaxed">
-              Get notified when {student.name} posts updates about their journey
+              Get notified when {transactionData.student.name} posts updates about their journey
             </p>
             <div className="flex gap-3">
               <Input type="email" placeholder="Enter your email" className="flex-1 rounded-full border-gray-300 h-12" />
@@ -96,7 +110,7 @@ export default function SuccessPage() {
         {/* Confirmation Message */}
         <div className="mb-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
           <p className="text-blue-800 font-medium">Thanks for Subscribing!</p>
-          <p className="text-blue-700 text-sm">You'll receive updates about {student.name}'s progress via email.</p>
+          <p className="text-blue-700 text-sm">You'll receive updates about {transactionData.student.name}'s progress via email.</p>
         </div>
 
         {/* Action Buttons */}
@@ -118,7 +132,7 @@ export default function SuccessPage() {
               Share
             </Button>
             <Button variant="outline" asChild className="flex-1 rounded-full border-gray-300 hover:bg-gray-50 h-12">
-              <Link href={`/student/${student.name.toLowerCase().replace(" ", "-")}`}>
+              <Link href={`/student/${transactionData.student.name.toLowerCase().replace(" ", "-")}`}>
                 View Profile
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
@@ -139,5 +153,13 @@ export default function SuccessPage() {
       {/* Footer */}
       <Footer/>
     </div>
+  )
+}
+
+export default function SuccessPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-white flex items-center justify-center">Loading...</div>}>
+      <SuccessPageContent />
+    </Suspense>
   )
 }

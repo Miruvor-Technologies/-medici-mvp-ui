@@ -55,6 +55,10 @@ export default function PledgePage({ params }: { params: Promise<{ id: string }>
     hash: string
     status: string
   } | null>(null)
+  const [transactionError, setTransactionError] = useState<{
+    message: string
+    details?: string
+  } | null>(null)
 
   // Fetch student data from Supabase
   useEffect(() => {
@@ -121,6 +125,7 @@ export default function PledgePage({ params }: { params: Promise<{ id: string }>
 
   const handleQuickAmount = (amount: number) => {
     setPledgeAmount(amount.toString())
+    console.log('Quick amount selected:', amount)
   }
 
   const connectSolanaWallet = async () => {
@@ -170,11 +175,18 @@ export default function PledgePage({ params }: { params: Promise<{ id: string }>
 
     try {
       setIsProcessing(true)
-      console.log('Starting transaction process...')
+      setTransactionError(null) // Clear any previous errors
+      console.log('=== STARTING TRANSACTION PROCESS ===')
       console.log('Donor wallet:', window.solana.publicKey.toString())
       console.log('Student wallet:', student.walletAddress)
-      console.log('Amount:', pledgeAmount)
+      console.log('Amount entered by user:', pledgeAmount)
+      console.log('Amount type:', typeof pledgeAmount)
       console.log('Mint address:', MINT_ADDRESS)
+      
+      // Validate amount first
+      if (!pledgeAmount || isNaN(parseFloat(pledgeAmount)) || parseFloat(pledgeAmount) <= 0) {
+        throw new Error('Invalid amount entered')
+      }
 
       // Create Solana connection
       const connection = new Connection(SOLANA_RPC_URL, 'confirmed')
@@ -196,8 +208,9 @@ export default function PledgePage({ params }: { params: Promise<{ id: string }>
       const mediciClient = new MediciClient(connection, walletAdapter)
       console.log('Medici client initialized')
 
-             // Use the amount directly as tokens (not converting to smallest unit)
-       const tokenAmount = Math.floor(parseFloat(pledgeAmount))
+             // Use the raw amount as token handling is done in the SDK
+       const tokenAmount = parseFloat(pledgeAmount)
+       console.log('Pledge amount entered:', pledgeAmount)
        console.log('Token amount:', tokenAmount)
 
        // Validate and create PublicKey objects with error handling
@@ -222,8 +235,8 @@ export default function PledgePage({ params }: { params: Promise<{ id: string }>
          throw new Error('Invalid student wallet address')
        }
       
-             console.log('Calling sendAmountFromDonorToStudent...')
-       console.log('Parameters:', {
+             console.log('=== CALLING MEDICI SDK ===')
+       console.log('sendAmountFromDonorToStudent parameters:', {
          tokenAmount,
          mintAddress: mintPublicKey.toString(),
          studentAddress: studentPublicKey.toString(),
@@ -232,12 +245,15 @@ export default function PledgePage({ params }: { params: Promise<{ id: string }>
 
       //  await mediciClient.initializeFeesConfigurationAccount()
        
+       console.log('About to call mediciClient.sendAmountFromDonorToStudent...')
+       
        // Send transaction using Medici SDK
        const txHash = await mediciClient.sendAmountFromDonorToStudent(
          tokenAmount,
          mintPublicKey,
          studentPublicKey
        )
+       console.log('SDK call completed successfully!')
 
        console.log('Transaction successful! Hash:', txHash)
        console.log('Transaction details:', {
@@ -255,14 +271,19 @@ export default function PledgePage({ params }: { params: Promise<{ id: string }>
         status: 'Confirmed'
       })
 
-      // Wait a bit then redirect to success page
+      // Scroll to top to show success message
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+
+      // Wait a bit then redirect to success page with transaction data
       setTimeout(() => {
         if (typeof window !== 'undefined') {
-          window.location.href = `/success/${resolvedParams.id}`
+          const successUrl = `/success/${resolvedParams.id}?amount=${encodeURIComponent(pledgeAmount)}&hash=${encodeURIComponent(txHash)}&student=${encodeURIComponent(student.fullName)}&program=${encodeURIComponent(student.program)}&university=${encodeURIComponent(student.university)}&photo=${encodeURIComponent(student.photo || '')}`
+          window.location.href = successUrl
         }
       }, 3000)
 
          } catch (error: any) {
+       console.error('=== TRANSACTION FAILED ===')
        console.error('Transaction failed:', error)
        console.error('Error details:', {
          message: error.message,
@@ -275,14 +296,32 @@ export default function PledgePage({ params }: { params: Promise<{ id: string }>
        console.error('Full error object:', JSON.stringify(error, null, 2))
       
              let errorMessage = 'Transaction failed. Please try again.'
+       let errorDetails = error.message
        
        if (error.message?.includes('User rejected') || error.message?.includes('user rejected')) {
          errorMessage = 'Transaction was rejected by user.'
+         errorDetails = 'You cancelled the transaction in your wallet.'
        } else if (error.message?.includes('insufficient funds')) {
          errorMessage = 'Insufficient funds in your wallet.'
+         errorDetails = 'Please ensure you have enough USDC tokens in your wallet.'
+       } else if (error.message?.includes('token owner')) {
+         errorMessage = 'Token ownership constraint error.'
+         errorDetails = 'Please check your wallet has the required tokens and permissions.'
+       } else if (error.message?.includes('blockhash')) {
+         errorMessage = 'Network connection issue.'
+         errorDetails = 'Please check your internet connection and try again.'
        }
       
-      alert(errorMessage)
+      // Set error state for UI display
+      setTransactionError({
+        message: errorMessage,
+        details: errorDetails
+      })
+      
+      // Scroll to top to show error
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      
+      console.error('Showing error to user:', errorMessage)
     } finally {
       setIsProcessing(false)
     }
@@ -346,6 +385,33 @@ export default function PledgePage({ params }: { params: Promise<{ id: string }>
                     <span className="text-green-800 font-medium">{transactionData.status}</span>
                   </div>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Transaction Error Display */}
+        {transactionError && (
+          <Card className="mb-8 border-red-200 bg-red-50">
+            <CardContent className="p-6">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Zap className="h-8 w-8 text-red-600" />
+                </div>
+                <h3 className="text-xl font-medium text-red-900 mb-2">Transaction Failed</h3>
+                <p className="text-red-700 mb-4">{transactionError.message}</p>
+                {transactionError.details && (
+                  <div className="bg-red-100 p-4 rounded-lg border border-red-200 mb-4">
+                    <p className="text-sm text-red-800">{transactionError.details}</p>
+                  </div>
+                )}
+                <Button
+                  onClick={() => setTransactionError(null)}
+                  variant="outline"
+                  className="border-red-300 text-red-700 hover:bg-red-100"
+                >
+                  Try Again
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -431,7 +497,10 @@ export default function PledgePage({ params }: { params: Promise<{ id: string }>
                   <Input
                     type="number"
                     value={pledgeAmount}
-                    onChange={(e) => setPledgeAmount(e.target.value)}
+                    onChange={(e) => {
+                      setPledgeAmount(e.target.value)
+                      console.log('Amount input changed to:', e.target.value)
+                    }}
                     placeholder="Enter amount"
                     className="rounded-full border-gray-300 h-12 text-lg"
                     min="0"
@@ -462,6 +531,8 @@ export default function PledgePage({ params }: { params: Promise<{ id: string }>
                     rows={3}
                   />
                 </div>
+
+
 
                 <Button
                   onClick={sendFundsToStudent}

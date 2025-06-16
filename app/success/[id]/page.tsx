@@ -1,3 +1,5 @@
+"use client"
+
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -6,22 +8,75 @@ import Link from "next/link"
 import Image from "next/image"
 import { Header } from "@/components/ui/header"
 import { Footer } from "@/components/ui/footer"
-import { supabase } from '@/lib/supabaseClient'
+import { createClient } from '@supabase/supabase-js'
+import { useSearchParams } from "next/navigation"
+import { useState, useEffect, use } from "react"
 
-export default async function SuccessPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params
-  const { data: student, error } = await supabase
-    .from('student_profiles')
-    .select('*')
-    .eq('id', id)
-    .single()
+// Create client-side Supabase client using environment variables
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+const supabase = createClient(supabaseUrl, supabaseKey)
 
-  // Mock transaction data - you can replace this with real data
+export default function SuccessPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = use(params)
+  const searchParams = useSearchParams()
+  const [student, setStudent] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+
+  // Get transaction data from URL parameters (passed from pledge page)
   const transactionData = {
-    amount: "250", // This should come from your actual transaction
-    hash: "0x1234...5678",
-    network: "Ethereum",
+    amount: searchParams.get('amount') || '0',
+    hash: searchParams.get('hash') || '',
+    network: "Solana",
     status: "Confirmed"
+  }
+
+  // Debug: Log the received parameters
+  useEffect(() => {
+    console.log('Success page URL parameters:', {
+      amount: searchParams.get('amount'),
+      hash: searchParams.get('hash'),
+      student: searchParams.get('student'),
+      program: searchParams.get('program'),
+      university: searchParams.get('university'),
+      photo: searchParams.get('photo')
+    })
+  }, [searchParams])
+
+  // Fetch student data
+  useEffect(() => {
+    const fetchStudent = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('student_profiles')
+          .select('*')
+          .eq('id', resolvedParams.id)
+          .single()
+
+        if (error) {
+          console.error('Error fetching student:', error)
+        } else {
+          setStudent(data)
+        }
+      } catch (error) {
+        console.error('Error:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchStudent()
+  }, [resolvedParams.id])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    )
   }
 
   if (!student) {
@@ -51,7 +106,7 @@ export default async function SuccessPage({ params }: { params: Promise<{ id: st
           Your funds are on the way to {student.fullName}!
         </h1>
         <p className="text-xl text-gray-600 mb-12 font-light leading-relaxed">
-          Your ${transactionData.amount} USDC contribution is being processed on the blockchain
+          Your ${transactionData.amount || '0'} USDC contribution is being processed on the blockchain
         </p>
 
         <Card className="mb-8 border-gray-200">
@@ -71,7 +126,7 @@ export default async function SuccessPage({ params }: { params: Promise<{ id: st
                 </p>
                 <div className="flex items-center gap-2">
                   <Heart className="h-4 w-4 text-blue-600" />
-                  <span className="text-sm text-gray-600">You contributed ${transactionData.amount}</span>
+                  <span className="text-sm text-gray-600">You contributed ${transactionData.amount || '0'}</span>
                 </div>
               </div>
             </div>
@@ -85,11 +140,22 @@ export default async function SuccessPage({ params }: { params: Promise<{ id: st
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-600">Amount:</span>
-                <span className="font-medium">${transactionData.amount} USDC</span>
+                <span className="font-medium">${transactionData.amount || '0'} USDC</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Transaction Hash:</span>
-                <span className="font-mono text-xs text-blue-600">{transactionData.hash}</span>
+                {transactionData.hash ? (
+                  <a 
+                    href={`https://explorer.solana.com/tx/${transactionData.hash}?cluster=devnet`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-mono text-xs text-blue-600 hover:text-blue-800 break-all underline"
+                  >
+                    {transactionData.hash}
+                  </a>
+                ) : (
+                  <span className="font-mono text-xs text-gray-500">Processing...</span>
+                )}
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Network:</span>
