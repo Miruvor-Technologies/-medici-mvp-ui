@@ -11,8 +11,12 @@ import { createClient } from '@supabase/supabase-js'
 import Link from "next/link"
 import Image from "next/image"
 import { Footer } from "@/components/ui/footer"
-import { Connection, PublicKey } from "@solana/web3.js"
-import { MediciClient } from "@/lib/medici-sdk/src/index"
+import { BrowserProvider } from "ethers"
+import { approveMediciToken, sendWithFee } from "@/evm-medici-sdk/src"
+
+// Contract addresses (replace with your actual addresses)
+const TOKEN_ADDRESS = process.env.NEXT_PUBLIC_TOKEN_ADDRESS!
+const TRANSFER_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_TRANSFER_CONTRACT_ADDRESS!
 
 // Create client-side Supabase client using environment variables
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -21,23 +25,19 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 // Initialize Supabase client
 const supabase = createClient(supabaseUrl, supabaseKey)
 
-// Solana configuration
-const SOLANA_RPC_URL = "https://api.devnet.solana.com" // Using devnet for testing
-const MINT_ADDRESS = "veTsw5aZBnxMqwaAioaveRoNv9PDyjAbmaV9CLfb6cy" // Your token mint address
-
-// Extend Window interface for Phantom wallet
+// Extend Window interface for Ethereum
 declare global {
   interface Window {
-    solana?: {
-      isPhantom?: boolean
-      connect: () => Promise<{ publicKey: PublicKey }>
-      disconnect: () => Promise<void>
-      signTransaction: (transaction: any) => Promise<any>
-      signMessage: (message: Uint8Array) => Promise<{ signature: Uint8Array }>
-      publicKey: PublicKey | null
+    ethereum?: {
+      request: (args: { method: string; params?: any[] }) => Promise<any>
+      on: (event: string, callback: (accounts: string[]) => void) => void
+      removeListener: (event: string, callback: (accounts: string[]) => void) => void
     }
   }
 }
+
+// Add new transaction state type
+type TransactionState = 'idle' | 'approving' | 'approved' | 'sending' | 'confirming' | 'confirmed' | 'failed'
 
 export default function PledgePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params)
@@ -59,6 +59,7 @@ export default function PledgePage({ params }: { params: Promise<{ id: string }>
     message: string
     details?: string
   } | null>(null)
+  const [transactionState, setTransactionState] = useState<TransactionState>('idle')
 
   // Fetch student data from Supabase
   useEffect(() => {
@@ -90,9 +91,39 @@ export default function PledgePage({ params }: { params: Promise<{ id: string }>
 
   // Check if wallet is already connected
   useEffect(() => {
-    if (isClient && window.solana && window.solana.publicKey) {
-      setWalletConnected(true)
-      setWalletAddress(window.solana.publicKey.toString())
+    const checkConnection = async () => {
+      if (isClient && typeof window !== 'undefined' && window.ethereum) {
+        try {
+          const accounts = await window.ethereum.request({ method: 'eth_accounts' })
+          if (accounts && accounts.length > 0) {
+            setWalletConnected(true)
+            setWalletAddress(accounts[0])
+          }
+        } catch (error) {
+          console.error('Error checking wallet connection:', error)
+        }
+      }
+    }
+
+    checkConnection()
+
+    // Listen for account changes
+    const handleAccountsChanged = (accounts: string[]) => {
+      if (accounts.length > 0) {
+        setWalletConnected(true)
+        setWalletAddress(accounts[0])
+      } else {
+        setWalletConnected(false)
+        setWalletAddress("")
+      }
+    }
+
+    if (typeof window !== 'undefined' && window.ethereum) {
+      const ethereum = window.ethereum
+      ethereum.on('accountsChanged', handleAccountsChanged)
+      return () => {
+        ethereum.removeListener('accountsChanged', handleAccountsChanged)
+      }
     }
   }, [isClient])
 
@@ -128,25 +159,28 @@ export default function PledgePage({ params }: { params: Promise<{ id: string }>
     console.log('Quick amount selected:', amount)
   }
 
-  const connectSolanaWallet = async () => {
+  const connectMetamask = async () => {
     if (!isClient) return
 
     try {
       setIsConnecting(true)
       
-      // Check if Phantom wallet is installed
-      if (typeof window === 'undefined' || !window.solana || !window.solana.isPhantom) {
-        alert('Phantom wallet is not installed. Please install Phantom wallet to continue.')
-        console.error('Phantom wallet not found')
+      // Check if MetaMask is installed
+      if (typeof window === 'undefined' || !window.ethereum) {
+        alert('MetaMask is not installed. Please install MetaMask to continue.')
+        console.error('MetaMask not found')
         return
       }
 
       // Connect to wallet
-      const response = await window.solana.connect()
-      console.log('Connected to wallet:', response.publicKey.toString())
-      
-      setWalletConnected(true)
-      setWalletAddress(response.publicKey.toString())
+      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' })
+      if (accounts && accounts.length > 0) {
+        console.log('Connected to wallet:', accounts[0])
+        setWalletConnected(true)
+        setWalletAddress(accounts[0])
+      } else {
+        throw new Error('No accounts found')
+      }
       
     } catch (error: any) {
       console.error('Wallet connection failed:', error)
@@ -157,7 +191,7 @@ export default function PledgePage({ params }: { params: Promise<{ id: string }>
   }
 
   const sendFundsToStudent = async () => {
-    if (!isClient || !walletConnected || !window.solana || !window.solana.publicKey) {
+    if (!isClient || !walletConnected || !window.ethereum) {
       alert('Please connect your wallet first.')
       return
     }
@@ -175,142 +209,130 @@ export default function PledgePage({ params }: { params: Promise<{ id: string }>
 
     try {
       setIsProcessing(true)
-      setTransactionError(null) // Clear any previous errors
+      setTransactionError(null)
+      setTransactionState('approving')
+      
+      // Scroll to top immediately when starting transaction
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      
       console.log('=== STARTING TRANSACTION PROCESS ===')
-      console.log('Donor wallet:', window.solana.publicKey.toString())
+      console.log('Donor wallet:', walletAddress)
       console.log('Student wallet:', student.walletAddress)
       console.log('Amount entered by user:', pledgeAmount)
-      console.log('Amount type:', typeof pledgeAmount)
-      console.log('Mint address:', MINT_ADDRESS)
+      console.log('Token address:', TOKEN_ADDRESS)
+      console.log('Transfer contract:', TRANSFER_CONTRACT_ADDRESS)
       
       // Validate amount first
-      if (!pledgeAmount || isNaN(parseFloat(pledgeAmount)) || parseFloat(pledgeAmount) <= 0) {
+      const amount = pledgeAmount.toString()
+      if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
         throw new Error('Invalid amount entered')
       }
 
-      // Create Solana connection
-      const connection = new Connection(SOLANA_RPC_URL, 'confirmed')
-      console.log('Solana connection created')
+      // Create provider
+      if (!window.ethereum) throw new Error('MetaMask not found')
+      const provider = new BrowserProvider(window.ethereum)
+      console.log('Provider created')
 
-      // Create wallet adapter for Medici SDK
-      const walletAdapter = {
-        publicKey: window.solana.publicKey,
-        signTransaction: async (transaction: any) => {
-          return await window.solana!.signTransaction(transaction)
-        },
-        signMessage: async (message: Uint8Array) => {
-          const result = await window.solana!.signMessage(message)
-          return result.signature
-        }
-      }
-
-      // Initialize Medici client
-      const mediciClient = new MediciClient(connection, walletAdapter)
-      console.log('Medici client initialized')
-
-             // Use the raw amount as token handling is done in the SDK
-       const tokenAmount = parseFloat(pledgeAmount)
-       console.log('Pledge amount entered:', pledgeAmount)
-       console.log('Token amount:', tokenAmount)
-
-       // Validate and create PublicKey objects with error handling
-       let mintPublicKey: PublicKey
-       let studentPublicKey: PublicKey
-       
-       try {
-         mintPublicKey = new PublicKey(MINT_ADDRESS)
-         console.log('Mint PublicKey created successfully:', mintPublicKey.toString())
-       } catch (error) {
-         console.error('Invalid mint address:', MINT_ADDRESS, error)
-         throw new Error('Invalid mint address configuration')
-       }
-       
-       try {
-         // Clean the wallet address (remove any whitespace/invalid characters)
-         const cleanWalletAddress = student.walletAddress.trim()
-         studentPublicKey = new PublicKey(cleanWalletAddress)
-         console.log('Student PublicKey created successfully:', studentPublicKey.toString())
-       } catch (error) {
-         console.error('Invalid student wallet address:', student.walletAddress, error)
-         throw new Error('Invalid student wallet address')
-       }
+      // First approve the transfer
+      setTransactionState('approving')
+      console.log('Approving token transfer...', {
+        tokenAddress: TOKEN_ADDRESS,
+        spenderAddress: TRANSFER_CONTRACT_ADDRESS,
+        amount: amount
+      })
       
-             console.log('=== CALLING MEDICI SDK ===')
-       console.log('sendAmountFromDonorToStudent parameters:', {
-         tokenAmount,
-         mintAddress: mintPublicKey.toString(),
-         studentAddress: studentPublicKey.toString(),
-         donorAddress: window.solana.publicKey.toString()
-       })
+      const approveTx = await approveMediciToken(
+        provider,
+        TOKEN_ADDRESS,
+        TRANSFER_CONTRACT_ADDRESS,
+        amount
+      )
+      
+      setTransactionState('approved')
+      console.log('Token transfer approved!', {
+        hash: approveTx.hash,
+        blockNumber: approveTx.blockNumber,
+        status: approveTx.status
+      })
 
-      //  await mediciClient.initializeFeesConfigurationAccount()
-       
-       console.log('About to call mediciClient.sendAmountFromDonorToStudent...')
-       
-       // Send transaction using Medici SDK
-       const txHash = await mediciClient.sendAmountFromDonorToStudent(
-         tokenAmount,
-         mintPublicKey,
-         studentPublicKey
-       )
-       console.log('SDK call completed successfully!')
+      // Add a small delay to ensure user sees the approved state
+      await new Promise(resolve => setTimeout(resolve, 1000))
 
-       console.log('Transaction successful! Hash:', txHash)
-       console.log('Transaction details:', {
-         hash: txHash,
-         amount: tokenAmount,
-         from: window.solana.publicKey.toString(),
-         to: studentPublicKey.toString(),
-         mint: mintPublicKey.toString()
-       })
+      // Then send the tokens
+      setTransactionState('sending')
+      console.log('Sending tokens...', {
+        contractAddress: TRANSFER_CONTRACT_ADDRESS,
+        studentAddress: student.walletAddress,
+        amount: amount
+      })
+      
+      const sendTx = await sendWithFee(
+        provider,
+        TRANSFER_CONTRACT_ADDRESS,
+        student.walletAddress,
+        amount
+      )
+      
+      setTransactionState('confirming')
+      console.log('Transaction successful!', {
+        hash: sendTx.hash,
+        blockNumber: sendTx.blockNumber,
+        status: sendTx.status
+      })
 
       // Set transaction data for display
+      const txHash = sendTx.hash
+      console.log('Final transaction details:', {
+        hash: txHash,
+        amount: amount,
+        from: walletAddress,
+        to: student.walletAddress,
+        status: sendTx.status
+      })
+
+      setTransactionState('confirmed')
       setTransactionData({
-        amount: pledgeAmount,
+        amount: amount,
         hash: txHash,
         status: 'Confirmed'
       })
 
-      // Scroll to top to show success message
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-
+      // No need to scroll here since we already scrolled at the start
+      
       // Wait a bit then redirect to success page with transaction data
       setTimeout(() => {
         if (typeof window !== 'undefined') {
-          const successUrl = `/success/${resolvedParams.id}?amount=${encodeURIComponent(pledgeAmount)}&hash=${encodeURIComponent(txHash)}&student=${encodeURIComponent(student.fullName)}&program=${encodeURIComponent(student.program)}&university=${encodeURIComponent(student.university)}&photo=${encodeURIComponent(student.photo || '')}`
+          const successUrl = `/success/${resolvedParams.id}?amount=${encodeURIComponent(amount)}&hash=${encodeURIComponent(txHash)}&student=${encodeURIComponent(student.fullName)}&program=${encodeURIComponent(student.program)}&university=${encodeURIComponent(student.university)}&photo=${encodeURIComponent(student.photo || '')}&from=${encodeURIComponent(walletAddress)}&to=${encodeURIComponent(student.walletAddress)}`
           window.location.href = successUrl
         }
       }, 3000)
 
-         } catch (error: any) {
-       console.error('=== TRANSACTION FAILED ===')
-       console.error('Transaction failed:', error)
-       console.error('Error details:', {
-         message: error.message,
-         code: error.code,
-         stack: error.stack,
-         logs: error.logs || 'No logs available'
-       })
-       
-       // Log the full error object for debugging
-       console.error('Full error object:', JSON.stringify(error, null, 2))
+    } catch (error: any) {
+      setTransactionState('failed')
+      console.error('=== TRANSACTION FAILED ===')
+      console.error('Transaction failed:', error)
+      console.error('Error details:', {
+        message: error.message,
+        code: error.code,
+        stack: error.stack
+      })
       
-             let errorMessage = 'Transaction failed. Please try again.'
-       let errorDetails = error.message
-       
-       if (error.message?.includes('User rejected') || error.message?.includes('user rejected')) {
-         errorMessage = 'Transaction was rejected by user.'
-         errorDetails = 'You cancelled the transaction in your wallet.'
-       } else if (error.message?.includes('insufficient funds')) {
-         errorMessage = 'Insufficient funds in your wallet.'
-         errorDetails = 'Please ensure you have enough USDC tokens in your wallet.'
-       } else if (error.message?.includes('token owner')) {
-         errorMessage = 'Token ownership constraint error.'
-         errorDetails = 'Please check your wallet has the required tokens and permissions.'
-       } else if (error.message?.includes('blockhash')) {
-         errorMessage = 'Network connection issue.'
-         errorDetails = 'Please check your internet connection and try again.'
-       }
+      // Log the full error object for debugging
+      console.error('Full error object:', JSON.stringify(error, null, 2))
+      
+      let errorMessage = 'Transaction failed. Please try again.'
+      let errorDetails = error.message
+      
+      if (error.message?.includes('user rejected') || error.message?.includes('User rejected')) {
+        errorMessage = 'Transaction was rejected by user.'
+        errorDetails = 'You cancelled the transaction in your wallet.'
+      } else if (error.message?.includes('insufficient funds')) {
+        errorMessage = 'Insufficient funds in your wallet.'
+        errorDetails = 'Please ensure you have enough tokens in your wallet.'
+      } else if (error.message?.includes('execution reverted')) {
+        errorMessage = 'Transaction reverted.'
+        errorDetails = 'The transaction was reverted by the smart contract. Please try again.'
+      }
       
       // Set error state for UI display
       setTransactionError({
@@ -324,6 +346,26 @@ export default function PledgePage({ params }: { params: Promise<{ id: string }>
       console.error('Showing error to user:', errorMessage)
     } finally {
       setIsProcessing(false)
+    }
+  }
+
+  // Helper function to get transaction state message
+  const getTransactionStateMessage = () => {
+    switch (transactionState) {
+      case 'approving':
+        return 'Requesting token approval...'
+      case 'approved':
+        return 'Token approval confirmed! Preparing transfer...'
+      case 'sending':
+        return 'Sending tokens to student...'
+      case 'confirming':
+        return 'Waiting for blockchain confirmation...'
+      case 'confirmed':
+        return 'Transaction confirmed!'
+      case 'failed':
+        return 'Transaction failed'
+      default:
+        return ''
     }
   }
 
@@ -417,6 +459,35 @@ export default function PledgePage({ params }: { params: Promise<{ id: string }>
           </Card>
         )}
 
+        {/* Transaction Processing State */}
+        {isProcessing && transactionState !== 'idle' && (
+          <Card className="mb-8 border-blue-200 bg-blue-50">
+            <CardContent className="p-6">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Loader2 className="h-8 w-8 text-blue-600 animate-spin" />
+                </div>
+                <h3 className="text-xl font-medium text-blue-900 mb-2">Processing Transaction</h3>
+                <p className="text-blue-700 mb-4">{getTransactionStateMessage()}</p>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-center gap-2">
+                    <div className={`w-2 h-2 rounded-full ${transactionState === 'approving' ? 'bg-blue-600 animate-pulse' : transactionState === 'approved' || transactionState === 'sending' || transactionState === 'confirming' || transactionState === 'confirmed' ? 'bg-green-600' : 'bg-gray-300'}`} />
+                    <span className="text-sm">Token Approval</span>
+                  </div>
+                  <div className="flex items-center justify-center gap-2">
+                    <div className={`w-2 h-2 rounded-full ${transactionState === 'sending' ? 'bg-blue-600 animate-pulse' : transactionState === 'confirming' || transactionState === 'confirmed' ? 'bg-green-600' : 'bg-gray-300'}`} />
+                    <span className="text-sm">Token Transfer</span>
+                  </div>
+                  <div className="flex items-center justify-center gap-2">
+                    <div className={`w-2 h-2 rounded-full ${transactionState === 'confirming' ? 'bg-blue-600 animate-pulse' : transactionState === 'confirmed' ? 'bg-green-600' : 'bg-gray-300'}`} />
+                    <span className="text-sm">Blockchain Confirmation</span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Student Info */}
         <Card className="mb-8 border-gray-200">
           <CardContent className="p-8">
@@ -446,13 +517,13 @@ export default function PledgePage({ params }: { params: Promise<{ id: string }>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Wallet className="h-5 w-5" />
-                Connect Your Solana Wallet
+                Connect Your Ethereum Wallet
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-600 mb-6">Connect your Phantom wallet to send USDC to {student.fullName}</p>
+              <p className="text-gray-600 mb-6">Connect your MetaMask wallet to send USDC to {student.fullName}</p>
               <Button
-                onClick={connectSolanaWallet}
+                onClick={connectMetamask}
                 disabled={isConnecting}
                 className="w-full rounded-full bg-purple-600 hover:bg-purple-700 text-white h-12"
               >
@@ -464,7 +535,7 @@ export default function PledgePage({ params }: { params: Promise<{ id: string }>
                 ) : (
                   <>
                     <Wallet className="mr-2 h-4 w-4" />
-                    Connect Phantom Wallet
+                    Connect MetaMask
                   </>
                 )}
               </Button>
@@ -532,10 +603,14 @@ export default function PledgePage({ params }: { params: Promise<{ id: string }>
                   />
                 </div>
 
-
-
                 <Button
-                  onClick={sendFundsToStudent}
+                  onClick={async () => {
+                    // Scroll to top immediately when button is clicked
+                    window.scrollTo({ top: 0, behavior: 'smooth' })
+                    // Small delay to allow smooth scroll before transaction starts
+                    await new Promise(resolve => setTimeout(resolve, 500))
+                    sendFundsToStudent()
+                  }}
                   disabled={isProcessing || !pledgeAmount}
                   className="w-full rounded-full bg-blue-600 hover:bg-blue-700 text-white h-12 text-lg"
                 >
@@ -555,7 +630,7 @@ export default function PledgePage({ params }: { params: Promise<{ id: string }>
                 <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
                   <p className="text-sm text-blue-800">
                     <Shield className="inline h-4 w-4 mr-1" />
-                    Secure transaction powered by Solana blockchain
+                    Secure transaction powered by Ethereum blockchain
                   </p>
                 </div>
               </CardContent>

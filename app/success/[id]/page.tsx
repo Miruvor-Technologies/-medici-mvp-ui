@@ -27,8 +27,10 @@ export default function SuccessPage({ params }: { params: Promise<{ id: string }
   const transactionData = {
     amount: searchParams.get('amount') || '0',
     hash: searchParams.get('hash') || '',
-    network: "Solana",
-    status: "Confirmed"
+    network: "Polygon zkEVM",
+    status: "Confirmed",
+    from: searchParams.get('from') || '',
+    to: searchParams.get('to') || ''
   }
 
   // Debug: Log the received parameters
@@ -143,10 +145,32 @@ export default function SuccessPage({ params }: { params: Promise<{ id: string }
                 <span className="font-medium">${transactionData.amount || '0'} USDC</span>
               </div>
               <div className="flex justify-between">
+                <span className="text-gray-600">From:</span>
+                <a 
+                  href={`https://cardona-zkevm.polygonscan.com/address/${transactionData.from}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-mono text-xs text-blue-600 hover:text-blue-800 break-all underline"
+                >
+                  {transactionData.from}
+                </a>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">To:</span>
+                <a 
+                  href={`https://cardona-zkevm.polygonscan.com/address/${transactionData.to}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-mono text-xs text-blue-600 hover:text-blue-800 break-all underline"
+                >
+                  {transactionData.to}
+                </a>
+              </div>
+              <div className="flex justify-between">
                 <span className="text-gray-600">Transaction Hash:</span>
                 {transactionData.hash ? (
                   <a 
-                    href={`https://explorer.solana.com/tx/${transactionData.hash}?cluster=devnet`}
+                    href={`https://cardona-zkevm.polygonscan.com/tx/${transactionData.hash}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="font-mono text-xs text-blue-600 hover:text-blue-800 break-all underline"
@@ -163,7 +187,10 @@ export default function SuccessPage({ params }: { params: Promise<{ id: string }
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Status:</span>
-                <span className="text-blue-600 font-medium">{transactionData.status}</span>
+                <span className="text-green-600 font-medium flex items-center gap-1">
+                  <CheckCircle className="h-4 w-4" />
+                  {transactionData.status}
+                </span>
               </div>
             </div>
           </CardContent>
