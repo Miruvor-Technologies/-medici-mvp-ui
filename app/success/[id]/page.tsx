@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { CheckCircle, Heart, Share2, ArrowRight } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
-import { Header } from "@/components/ui/header"
+import { Header } from "@/components/ui/header3"
 import { Footer } from "@/components/ui/footer"
 import { createClient } from '@supabase/supabase-js'
 import { useSearchParams } from "next/navigation"
@@ -115,7 +115,7 @@ export default function SuccessPage({ params }: { params: Promise<{ id: string }
           <CardContent className="p-6">
             <div className="flex items-center gap-6">
               <Image
-                src={student.photo || "/placeholder.svg"}
+                src={student.photo || "/image.png"}
                 alt={student.fullName}
                 width={80}
                 height={80}

@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Search, Filter, MapPin, Heart, Info, ArrowRight } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
-import { Header } from "@/components/ui/header"
+import { Header } from "@/components/ui/header3"
 import {
   Tooltip,
   TooltipContent,

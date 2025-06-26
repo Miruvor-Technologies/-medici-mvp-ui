@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabaseClient'
 import { redirect } from 'next/navigation'
-import { Header } from "@/components/ui/header"
+import { Header } from "@/components/ui/header3"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -42,7 +42,7 @@ export default async function BrowseStudentsPage() {
                 <CardContent className="p-6">
                   <div className="flex items-center gap-4 mb-8">
                     <Image
-                      src={student.photo || '/default-avatar.png'}
+                      src={student.photo || '/image.png'}
                       alt={student.fullName}
                       width={64}
                       height={64}

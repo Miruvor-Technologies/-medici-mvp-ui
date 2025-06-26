@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Shield, Users, Zap, DollarSign, CheckCircle, ArrowRight, Target } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
-import { Header } from "@/components/ui/header"
+import { Header } from "@/components/ui/header3"
 import { Footer } from "@/components/ui/footer"
 
 export default function HowItWorksPage() {

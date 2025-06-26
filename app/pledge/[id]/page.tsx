@@ -383,9 +383,9 @@ export default function PledgePage({ params }: { params: Promise<{ id: string }>
               className="h-14 w-auto"
             />
           </Link>
-          <Button variant="outline" className="rounded-full border-gray-300 hover:bg-gray-50">
+          {/* <Button variant="outline" className="rounded-full border-gray-300 hover:bg-gray-50">
             Sign In
-          </Button>
+          </Button> */}
         </div>
       </header>
 
@@ -493,7 +493,7 @@ export default function PledgePage({ params }: { params: Promise<{ id: string }>
           <CardContent className="p-8">
             <div className="flex items-center gap-6 mb-6">
               <Image
-                src={student.photo || "/placeholder.svg"}
+                src={student.photo || "/image.png"}
                 alt={student.fullName}
                 width={80}
                 height={80}

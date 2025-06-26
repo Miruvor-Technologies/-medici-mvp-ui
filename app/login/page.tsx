@@ -22,7 +22,7 @@ export default function LoginPage() {
         className="h-14 w-auto"
       />
     </Link>
-          <Link href="/register" className="text-gray-600 hover:text-gray-900 transition-colors">
+          <Link href="https://student.medici.ac/studentform" className="text-gray-600 hover:text-gray-900 transition-colors">
             Don't have an account? Sign up
           </Link>
         </div>

@@ -6,7 +6,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { cacheTag } from "next/dist/server/use-cache/cache-tag"
 import { Footer } from "@/components/ui/footer"
-import { Header } from "@/components/ui/header"
+import { Header } from "@/components/ui/header3"
 
 const faqs = [
 

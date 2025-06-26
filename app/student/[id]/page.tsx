@@ -8,6 +8,8 @@ import Link from "next/link"
 import Image from "next/image"
 import { Footer } from "@/components/ui/footer"
 import { supabase } from '@/lib/supabaseClient'
+import { ShareButton } from "@/components/sharebutton"
+
 
 // Component to handle social links rendering
 function SocialLinksSection({ socialLinks }: { socialLinks: any }) {
@@ -126,13 +128,14 @@ export default async function StudentProfilePage({ params }: { params: Promise<{
             />
           </Link>
           <div className="flex items-center gap-4">
-            <Button variant="outline" size="sm" className="rounded-full border-gray-300 hover:bg-gray-50">
+            {/* <Button variant="outline" size="sm" className="rounded-full border-gray-300 hover:bg-gray-50">
               <Share2 className="h-4 w-4 mr-2" />
               Share
-            </Button>
-            <Button asChild variant="outline" className="rounded-full border-gray-300 hover:bg-gray-50">
+            </Button> */}
+            <ShareButton  />
+            {/* <Button asChild variant="outline" className="rounded-full border-gray-300 hover:bg-gray-50">
               <Link href="/login">Sign In</Link>
-            </Button>
+            </Button> */}
           </div>
         </div>
       </header>
@@ -155,7 +158,7 @@ export default async function StudentProfilePage({ params }: { params: Promise<{
               <CardContent className="p-8">
                 <div className="flex flex-col md:flex-row gap-8">
                   <Image
-                    src={student.photo || "/placeholder.svg"}
+                    src={student.photo || "/image.png"}
                     alt={student.fullName}
                     width={200}
                     height={200}
@@ -343,7 +346,7 @@ export default async function StudentProfilePage({ params }: { params: Promise<{
               </Card>
 
               {/* Quick Stats */}
-              <Card className="border-gray-200">
+              {/* <Card className="border-gray-200">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-xl font-light">
                     <Award className="h-5 w-5" />
@@ -364,7 +367,7 @@ export default async function StudentProfilePage({ params }: { params: Promise<{
                     <span className="font-medium">∞</span>
                   </div>
                 </CardContent>
-              </Card>
+              </Card> */}
             </div>
           </div>
         </div>

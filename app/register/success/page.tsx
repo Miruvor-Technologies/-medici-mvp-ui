@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
 import { CheckCircle2 } from "lucide-react"
-import { Header } from "@/components/ui/header"
+import { Header } from "@/components/ui/header3"
 
 export default function SuccessPage() {
   return (

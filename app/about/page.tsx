@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button"
 import { Shield, Users, Zap, ArrowRight, Target, Globe, Heart } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
-import { Header } from "@/components/ui/header"
+import { Header } from "@/components/ui/header3"
 import { Footer } from "@/components/ui/footer"
 
 export default function AboutPage() {
@@ -143,7 +143,7 @@ export default function AboutPage() {
               size="lg"
               className="rounded-full border-gray-300 hover:bg-gray-50 px-8 py-6 text-lg font-medium"
             >
-              <Link href="/register">Apply for Funding</Link>
+              <Link href="https://student.medici.ac/studentform">Apply for Funding</Link>
             </Button>
           </div>
         </div>

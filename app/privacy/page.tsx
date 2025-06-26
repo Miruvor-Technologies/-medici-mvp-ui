@@ -4,7 +4,7 @@ import { ArrowRight, Mail, Twitter } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import { Footer } from "@/components/ui/footer"
-import { Header } from "@/components/ui/header"
+import { Header } from "@/components/ui/header3"
 
 export default function PrivacyPage() {
   return (
