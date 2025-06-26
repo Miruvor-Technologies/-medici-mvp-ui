@@ -5,12 +5,10 @@ import { motion, useInView, useScroll, useTransform } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { Users, Shield, Zap, ArrowRight, GraduationCap, Heart, Globe, Mail, Twitter, Menu, X } from "lucide-react"
 import Link from "next/link"
 import { Header } from "@/components/ui/header"
 import { Layout } from "@/components/layout"
-import { StarBorder } from "@/components/ui/star-border"
 
 const features = [
   {
@@ -107,6 +105,7 @@ const faqs = [
 
 export default function HomePage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const howItWorksRef = useRef(null)
   const featuresRef = useRef(null)
   const heroRef = useRef(null)
@@ -119,11 +118,39 @@ export default function HomePage() {
     offset: ["start start", "end start"],
   })
 
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({
+        x: e.clientX,
+        y: e.clientY
+      });
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+    };
+  }, []);
+
   const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "50%"])
   const heroOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0])
 
   return (
     <Layout>
+      {/* Mouse Following Glow Effect */}
+      <div 
+        className="fixed pointer-events-none z-0 opacity-25 animate-morph"
+        style={{
+          left: mousePosition.x - 250,
+          top: mousePosition.y - 250,
+          width: '500px',
+          height: '500px',
+          background: 'radial-gradient(circle, rgba(147, 51, 234, 0.3) 0%, rgba(59, 130, 246, 0.2) 40%, transparent 70%)',
+          filter: 'blur(50px)',
+          transform: 'translate3d(0, 0, 0)',
+        }}
+      />
       <div className="min-h-[calc(100vh-4rem)]">
         {/* Hero Section */}
         <section ref={heroRef} className="relative min-h-screen flex items-center justify-center overflow-hidden">
@@ -198,7 +225,9 @@ export default function HomePage() {
         <div className="bg-white dark:bg-gray-900 rounded-full px-8 py-4 flex items-center gap-3 justify-center backdrop-blur-sm">
           <Heart className="h-5 w-5 text-blue-600 group-hover:text-purple-600 group-hover:scale-110 transition-all duration-200" />
           <span className="text-base font-medium bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          <Link href="/browse">
             Fund a Student
+            </Link>
           </span>
         </div>
       </button>
@@ -208,7 +237,9 @@ export default function HomePage() {
         <div className="bg-white dark:bg-gray-900 rounded-full px-8 py-4 flex items-center gap-3 justify-center backdrop-blur-sm">
           <GraduationCap className="h-5 w-5 text-blue-600 group-hover:text-purple-600 group-hover:scale-110 transition-all duration-200" />
           <span className="text-base font-medium bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          <Link href="https://student.medici.ac/studentform">
             Request Scholarship Funds
+            </Link>
           </span>
         </div>
       </button>
