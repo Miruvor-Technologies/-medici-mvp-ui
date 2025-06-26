@@ -1,6 +1,6 @@
 import Link from "next/link"
 import Image from "next/image"
-import { X, Mail } from "lucide-react"
+import { Twitter, Mail } from "lucide-react"
 
 export function Footer() {
   return (
@@ -62,7 +62,7 @@ export function Footer() {
                   rel="noopener noreferrer"
                   className="text-muted-foreground hover:text-foreground transition-colors inline-flex items-center"
                 >
-                  <X className="h-4 w-4 mr-2" />
+                  <Twitter className="h-4 w-4 mr-2" />
                   Twitter
                 </a>
               </li>

@@ -11,6 +11,7 @@ import { createClient } from '@supabase/supabase-js'
 import Link from "next/link"
 import Image from "next/image"
 import { Footer } from "@/components/ui/footer"
+import { Header } from "@/components/ui/header"
 import { BrowserProvider } from "ethers"
 import { approveMediciToken, sendWithFee } from "@/evm-medici-sdk/src"
 
@@ -130,10 +131,10 @@ export default function PledgePage({ params }: { params: Promise<{ id: string }>
   // If loading, show loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">Loading student profile...</p>
+          <p className="text-muted-foreground">Loading student profile...</p>
         </div>
       </div>
     )
@@ -142,10 +143,10 @@ export default function PledgePage({ params }: { params: Promise<{ id: string }>
   // If no student is found, show error state
   if (!student) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-medium text-gray-900 mb-2">Student Not Found</h1>
-          <p className="text-gray-600 mb-4">The student profile you're looking for doesn't exist.</p>
+          <h1 className="text-2xl font-medium text-foreground mb-2">Student Not Found</h1>
+          <p className="text-muted-foreground mb-4">The student profile you're looking for doesn't exist.</p>
           <Button asChild variant="outline" size="lg">
             <Link href="/browse">Back to Browse</Link>
           </Button>
@@ -370,61 +371,41 @@ export default function PledgePage({ params }: { params: Promise<{ id: string }>
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header */}
-      <header className="border-b border-gray-100 bg-white sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-0 flex items-center justify-between h-16">
-          <Link href="/" className="flex items-center">
-            <Image
-              src="/images/medici-logo.svg"
-              alt="Medici"
-              width={200}
-              height={64}
-              className="h-14 w-auto"
-            />
-          </Link>
-          {/* <Button variant="outline" className="rounded-full border-gray-300 hover:bg-gray-50">
-            Sign In
-          </Button> */}
-        </div>
-      </header>
+    <div className="min-h-screen bg-background dark:bg-black">
+      <Header />
 
       <div className="container mx-auto px-6 py-12 max-w-2xl">
         {/* Back Button */}
-        <button
-          onClick={() => {
-            if (typeof window !== 'undefined') {
-              window.history.back()
-            }
-          }}
-          className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 mb-8 transition-colors"
+        <Link
+          href={`/student/${resolvedParams.id}`}
+          className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-400 mb-8 transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back
-        </button>
+          Back to Profile
+        </Link>
 
         {/* Transaction Success Display */}
         {transactionData && (
-          <Card className="mb-8 border-green-200 bg-green-50">
+          <Card className="mb-8 border-green-500/50 bg-green-500/10">
             <CardContent className="p-6">
               <div className="text-center">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Shield className="h-8 w-8 text-green-600" />
+                <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Shield className="h-8 w-8 text-green-400" />
                 </div>
-                <h3 className="text-xl font-medium text-green-900 mb-2">Transaction Successful!</h3>
-                <p className="text-green-700 mb-4">Your ${transactionData.amount} USDC has been sent to {student.fullName}</p>
+                <h3 className="text-xl font-medium text-green-300 mb-2">Transaction Successful!</h3>
+                <p className="text-green-400/80 mb-4">Your ${transactionData.amount} USDC has been sent to {student.fullName}</p>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-green-600">Amount:</span>
-                    <span className="font-medium">${transactionData.amount} USDC</span>
+                    <span className="text-green-400/70">Amount:</span>
+                    <span className="font-medium text-green-300">${transactionData.amount} USDC</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-green-600">Transaction Hash:</span>
-                    <span className="font-mono text-xs text-green-800 break-all">{transactionData.hash}</span>
+                    <span className="text-green-400/70">Transaction Hash:</span>
+                    <span className="font-mono text-xs text-green-300 break-all">{transactionData.hash}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-green-600">Status:</span>
-                    <span className="text-green-800 font-medium">{transactionData.status}</span>
+                    <span className="text-green-400/70">Status:</span>
+                    <span className="text-green-300 font-medium">{transactionData.status}</span>
                   </div>
                 </div>
               </div>
@@ -434,23 +415,23 @@ export default function PledgePage({ params }: { params: Promise<{ id: string }>
 
         {/* Transaction Error Display */}
         {transactionError && (
-          <Card className="mb-8 border-red-200 bg-red-50">
+          <Card className="mb-8 border-red-500/50 bg-red-500/10">
             <CardContent className="p-6">
               <div className="text-center">
-                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Zap className="h-8 w-8 text-red-600" />
+                <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Zap className="h-8 w-8 text-red-400" />
                 </div>
-                <h3 className="text-xl font-medium text-red-900 mb-2">Transaction Failed</h3>
-                <p className="text-red-700 mb-4">{transactionError.message}</p>
+                <h3 className="text-xl font-medium text-red-300 mb-2">Transaction Failed</h3>
+                <p className="text-red-400/80 mb-4">{transactionError.message}</p>
                 {transactionError.details && (
-                  <div className="bg-red-100 p-4 rounded-lg border border-red-200 mb-4">
-                    <p className="text-sm text-red-800">{transactionError.details}</p>
+                  <div className="bg-red-500/20 p-4 rounded-lg border border-red-500/50 mb-4">
+                    <p className="text-sm text-red-300">{transactionError.details}</p>
                   </div>
                 )}
                 <Button
                   onClick={() => setTransactionError(null)}
                   variant="outline"
-                  className="border-red-300 text-red-700 hover:bg-red-100"
+                  className="border-red-500/50 text-red-400/80 hover:bg-red-500/20"
                 >
                   Try Again
                 </Button>
@@ -461,26 +442,26 @@ export default function PledgePage({ params }: { params: Promise<{ id: string }>
 
         {/* Transaction Processing State */}
         {isProcessing && transactionState !== 'idle' && (
-          <Card className="mb-8 border-blue-200 bg-blue-50">
+          <Card className="mb-8 border-blue-500/50 bg-blue-500/10">
             <CardContent className="p-6">
               <div className="text-center">
-                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Loader2 className="h-8 w-8 text-blue-600 animate-spin" />
+                <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Loader2 className="h-8 w-8 text-blue-400 animate-spin" />
                 </div>
-                <h3 className="text-xl font-medium text-blue-900 mb-2">Processing Transaction</h3>
-                <p className="text-blue-700 mb-4">{getTransactionStateMessage()}</p>
+                <h3 className="text-xl font-medium text-blue-300 mb-2">Processing Transaction</h3>
+                <p className="text-blue-400/80 mb-4">{getTransactionStateMessage()}</p>
                 <div className="space-y-4">
                   <div className="flex items-center justify-center gap-2">
-                    <div className={`w-2 h-2 rounded-full ${transactionState === 'approving' ? 'bg-blue-600 animate-pulse' : transactionState === 'approved' || transactionState === 'sending' || transactionState === 'confirming' || transactionState === 'confirmed' ? 'bg-green-600' : 'bg-gray-300'}`} />
-                    <span className="text-sm">Token Approval</span>
+                    <div className={`w-2 h-2 rounded-full ${transactionState === 'approving' ? 'bg-blue-500 animate-pulse' : transactionState === 'approved' || transactionState === 'sending' || transactionState === 'confirming' || transactionState === 'confirmed' ? 'bg-green-500' : 'bg-muted'}`} />
+                    <span className="text-sm text-muted-foreground">Token Approval</span>
                   </div>
                   <div className="flex items-center justify-center gap-2">
-                    <div className={`w-2 h-2 rounded-full ${transactionState === 'sending' ? 'bg-blue-600 animate-pulse' : transactionState === 'confirming' || transactionState === 'confirmed' ? 'bg-green-600' : 'bg-gray-300'}`} />
-                    <span className="text-sm">Token Transfer</span>
+                    <div className={`w-2 h-2 rounded-full ${transactionState === 'sending' ? 'bg-blue-500 animate-pulse' : transactionState === 'confirming' || transactionState === 'confirmed' ? 'bg-green-500' : 'bg-muted'}`} />
+                    <span className="text-sm text-muted-foreground">Token Transfer</span>
                   </div>
                   <div className="flex items-center justify-center gap-2">
-                    <div className={`w-2 h-2 rounded-full ${transactionState === 'confirming' ? 'bg-blue-600 animate-pulse' : transactionState === 'confirmed' ? 'bg-green-600' : 'bg-gray-300'}`} />
-                    <span className="text-sm">Blockchain Confirmation</span>
+                    <div className={`w-2 h-2 rounded-full ${transactionState === 'confirming' ? 'bg-blue-500 animate-pulse' : transactionState === 'confirmed' ? 'bg-green-500' : 'bg-muted'}`} />
+                    <span className="text-sm text-muted-foreground">Blockchain Confirmation</span>
                   </div>
                 </div>
               </div>
@@ -489,7 +470,7 @@ export default function PledgePage({ params }: { params: Promise<{ id: string }>
         )}
 
         {/* Student Info */}
-        <Card className="mb-8 border-gray-200">
+        <Card className="mb-8 bg-card border-border">
           <CardContent className="p-8">
             <div className="flex items-center gap-6 mb-6">
               <Image
@@ -500,20 +481,20 @@ export default function PledgePage({ params }: { params: Promise<{ id: string }>
                 className="rounded-full object-cover w-20 h-20"
               />
               <div>
-                <h1 className="text-2xl font-medium text-gray-900 mb-1">{student.fullName}</h1>
-                <p className="text-gray-600 mb-2">{student.program} at {student.university}</p>
+                <h1 className="text-2xl font-medium text-foreground mb-1">{student.fullName}</h1>
+                <p className="text-muted-foreground mb-2">{student.program} at {student.university}</p>
                 <Badge variant="secondary" className="rounded-full">
                   Goal: ${student.fundsRequested ? student.fundsRequested.toLocaleString() : 'N/A'}
                 </Badge>
               </div>
             </div>
-            <p className="text-gray-700 leading-relaxed">{student.quickBio || 'No bio available.'}</p>
+            <p className="text-muted-foreground leading-relaxed">{student.quickBio || 'No bio available.'}</p>
           </CardContent>
         </Card>
 
         {/* Wallet Connection */}
         {!walletConnected ? (
-          <Card className="mb-8 border-gray-200">
+          <Card className="mb-8 bg-card border-border">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Wallet className="h-5 w-5" />
@@ -521,11 +502,12 @@ export default function PledgePage({ params }: { params: Promise<{ id: string }>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-600 mb-6">Connect your MetaMask wallet to send USDC to {student.fullName}</p>
+              <p className="text-muted-foreground mb-6">Connect your MetaMask wallet to send USDC to {student.fullName}</p>
               <Button
                 onClick={connectMetamask}
                 disabled={isConnecting}
-                className="w-full rounded-full bg-purple-600 hover:bg-purple-700 text-white h-12"
+                size="lg"
+                className="w-full rounded-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-md hover:shadow-lg transition-all duration-300"
               >
                 {isConnecting ? (
                   <>
@@ -544,18 +526,18 @@ export default function PledgePage({ params }: { params: Promise<{ id: string }>
         ) : (
           <>
             {/* Wallet Connected */}
-            <Card className="mb-8 border-green-200 bg-green-50">
+            <Card className="mb-8 border-green-500/50 bg-green-500/10">
               <CardContent className="p-6">
                 <div className="flex items-center gap-3">
                   <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                  <span className="font-medium text-green-900">Wallet Connected</span>
+                  <span className="font-medium text-green-300">Wallet Connected</span>
                 </div>
-                <p className="text-sm text-green-700 mt-1 font-mono break-all">{walletAddress}</p>
+                <p className="text-sm text-green-400/80 mt-1 font-mono break-all">{walletAddress}</p>
               </CardContent>
             </Card>
 
             {/* Funding Form */}
-            <Card className="mb-8 border-gray-200">
+            <Card className="mb-8 bg-card border-border">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Zap className="h-5 w-5" />
@@ -573,7 +555,7 @@ export default function PledgePage({ params }: { params: Promise<{ id: string }>
                       console.log('Amount input changed to:', e.target.value)
                     }}
                     placeholder="Enter amount"
-                    className="rounded-full border-gray-300 h-12 text-lg"
+                    className="rounded-full border-border h-12 text-lg"
                     min="0"
                     step="0.01"
                   />
@@ -584,7 +566,7 @@ export default function PledgePage({ params }: { params: Promise<{ id: string }>
                         variant="outline"
                         size="sm"
                         onClick={() => handleQuickAmount(amount)}
-                        className="rounded-full border-gray-300 hover:bg-gray-50"
+                        className="rounded-full border-border hover:bg-muted"
                       >
                         ${amount}
                       </Button>
@@ -592,16 +574,16 @@ export default function PledgePage({ params }: { params: Promise<{ id: string }>
                   </div>
                 </div>
 
-                <div>
+                {/* <div>
                   <label className="block text-sm font-medium mb-3">Message (Optional)</label>
                   <Textarea
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     placeholder="Leave a message for the student..."
-                    className="border-gray-300 rounded-lg"
+                    className="border-border rounded-lg"
                     rows={3}
                   />
-                </div>
+                </div> */}
 
                 <Button
                   onClick={async () => {
@@ -612,7 +594,8 @@ export default function PledgePage({ params }: { params: Promise<{ id: string }>
                     sendFundsToStudent()
                   }}
                   disabled={isProcessing || !pledgeAmount}
-                  className="w-full rounded-full bg-blue-600 hover:bg-blue-700 text-white h-12 text-lg"
+                  size="lg"
+                  className="w-full rounded-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-md hover:shadow-lg transition-all duration-300"
                 >
                   {isProcessing ? (
                     <>
@@ -627,8 +610,8 @@ export default function PledgePage({ params }: { params: Promise<{ id: string }>
                   )}
                 </Button>
 
-                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                  <p className="text-sm text-blue-800">
+                <div className="bg-blue-500/10 p-4 rounded-lg border border-blue-500/50">
+                  <p className="text-sm text-blue-400/80">
                     <Shield className="inline h-4 w-4 mr-1" />
                     Secure transaction powered by Ethereum blockchain
                   </p>

@@ -4,7 +4,12 @@ import { useState, useRef, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { FaWhatsapp, FaFacebook, FaXTwitter, FaEnvelope, FaRegCopy, FaCheck } from 'react-icons/fa6'
 
-export const ShareButton = () => {
+// Add className prop
+type ShareButtonProps = {
+  className?: string
+}
+
+export const ShareButton = ({ className = "" }: ShareButtonProps) => {
   const [open, setOpen] = useState(false)
   const [copied, setCopied] = useState(false)
   const [profileUrl, setProfileUrl] = useState('')
@@ -38,7 +43,7 @@ export const ShareButton = () => {
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-300 dark:border-slate-700 bg-background dark:bg-slate-800 dark:hover:bg-slate-700 shadow-sm hover:bg-gray-100 transition text-foreground"
+        className={`flex items-center gap-2 px-4 py-2 rounded-full border border-gray-300 dark:border-slate-700 bg-background dark:bg-slate-800 dark:hover:bg-slate-700 shadow-sm hover:bg-gray-100 transition text-foreground ${className}`}
       >
         <Share2 className="w-5 h-5" />
         <span className="font-medium text-sm">Share</span>

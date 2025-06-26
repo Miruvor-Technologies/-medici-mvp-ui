@@ -27,7 +27,7 @@ export default async function BrowseStudentsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-blue-950/20 dark:via-purple-950/10 dark:to-pink-950/20">
       <Header />
-      <div className="container mx-auto px-6 pt-40 pb-20"> {/* Push content below header */}
+      <div className="container mx-auto px-6 pt-20 pb-20"> {/* Reduced gap below header */}
         <div className="mb-12 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
             Browse Students

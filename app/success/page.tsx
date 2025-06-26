@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input"
 import { CheckCircle, Heart, Share2, ArrowRight } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
-import { Header } from "@/components/ui/header3"
+import { Header } from "@/components/ui/header"
 import { Footer } from "@/components/ui/footer"
 import { useSearchParams } from "next/navigation"
 import { Suspense } from "react"
@@ -93,25 +93,7 @@ function SuccessPageContent() {
         </Card>
 
         {/* Email Updates */}
-        <Card className="mb-8 border-gray-200">
-          <CardContent className="p-6">
-            <h3 className="font-medium mb-3">Want updates on your student's progress?</h3>
-            <p className="text-gray-600 mb-4 leading-relaxed">
-              Get notified when {transactionData.student.name} posts updates about their journey
-            </p>
-            <div className="flex gap-3">
-              <Input type="email" placeholder="Enter your email" className="flex-1 rounded-full border-gray-300 h-12" />
-              <Button className="rounded-full bg-blue-600 hover:bg-blue-700 text-white px-6">Subscribe</Button>
-            </div>
-            <p className="text-xs text-gray-500 mt-3">We'll link your wallet address with your email for updates</p>
-          </CardContent>
-        </Card>
-
-        {/* Confirmation Message */}
-        <div className="mb-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <p className="text-blue-800 font-medium">Thanks for Subscribing!</p>
-          <p className="text-blue-700 text-sm">You'll receive updates about {transactionData.student.name}'s progress via email.</p>
-        </div>
+        
 
         {/* Action Buttons */}
         <div className="space-y-4">
@@ -140,14 +122,7 @@ function SuccessPageContent() {
           </div>
         </div>
 
-        {/* Impact Message */}
-        <div className="mt-16 p-8 bg-blue-50 rounded-lg border border-blue-200">
-          <h3 className="font-medium text-blue-900 mb-3">Your Impact</h3>
-          <p className="text-blue-800 leading-relaxed">
-            Thanks to supporters like you, we've helped over 1,200 students achieve their educational dreams. Every
-            contribution makes a difference!
-          </p>
-        </div>
+
       </div>
 
       {/* Footer */}
