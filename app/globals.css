@@ -92,3 +92,31 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+/* Animated purple hover background for nav links */
+.nav-animated-link {
+  position: relative;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.nav-animated-link::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 120%;
+  height: 120%;
+  background: radial-gradient(circle at center, #a78bfa33 0%, #a78bfa00 80%);
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.7);
+  transition: opacity 0.3s, transform 0.3s;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.nav-animated-link:hover::before,
+.nav-animated-link:focus-visible::before {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}

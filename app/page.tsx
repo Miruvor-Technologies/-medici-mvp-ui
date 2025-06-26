@@ -8,8 +8,9 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { Users, Shield, Zap, ArrowRight, GraduationCap, Heart, Globe, Mail, Twitter, Menu, X } from "lucide-react"
 import Link from "next/link"
-import { Header } from "@/components/ui/header3"
+import { Header } from "@/components/ui/header"
 import { Layout } from "@/components/layout"
+import { StarBorder } from "@/components/ui/star-border"
 
 const features = [
   {
@@ -189,17 +190,29 @@ export default function HomePage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 1, delay: 0.4 }}
-                className="flex justify-center items-center"
+                className="flex justify-center items-center gap-6 mt-8 drop-shadow-xl"
               >
-                <Link href="/notify">
-                  <Button
-                    size="lg"
-                    className="px-8 py-4 text-lg rounded-full border-2 border-blue-400/30 bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500/20 hover:border-blue-400/50 hover:scale-105 hover:shadow-lg transition-all duration-300"
-                  >
-                    Get Early Access
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Button>
-                </Link>
+<div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-12 px-4">
+      {/* Primary CTA - Fund a Student */}
+      <button className="group relative rounded-full p-[1px] bg-gradient-to-r from-blue-500 to-purple-600 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] min-w-[220px]">
+        <div className="bg-white dark:bg-gray-900 rounded-full px-8 py-4 flex items-center gap-3 justify-center backdrop-blur-sm">
+          <Heart className="h-5 w-5 text-blue-600 group-hover:text-purple-600 group-hover:scale-110 transition-all duration-200" />
+          <span className="text-base font-medium bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            Fund a Student
+          </span>
+        </div>
+      </button>
+
+      {/* Secondary CTA - Request Scholarship */}
+      <button className="group relative rounded-full p-[1px] bg-gradient-to-r from-blue-500 to-purple-600 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] min-w-[220px]">
+        <div className="bg-white dark:bg-gray-900 rounded-full px-8 py-4 flex items-center gap-3 justify-center backdrop-blur-sm">
+          <GraduationCap className="h-5 w-5 text-blue-600 group-hover:text-purple-600 group-hover:scale-110 transition-all duration-200" />
+          <span className="text-base font-medium bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            Request Scholarship Funds
+          </span>
+        </div>
+      </button>
+    </div>
               </motion.div>
             </motion.div>
           </motion.div>

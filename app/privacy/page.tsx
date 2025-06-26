@@ -1,38 +1,49 @@
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { ArrowRight, Mail, Twitter } from "lucide-react"
+"use client"
+
+import { motion } from "framer-motion"
+import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
-import Image from "next/image"
-import { Footer } from "@/components/ui/footer"
-import { Header } from "@/components/ui/header3"
+import { Layout } from "@/components/layout"
 
-export default function PrivacyPage() {
+export default function PrivacyPolicyPage() {
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header */}
-      <Header />
+    <Layout>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-blue-950/20 dark:via-purple-950/10 dark:to-pink-950/20">
+        <div className="container mx-auto px-4 pt-8 pb-32">
+          <Link href="/" className="inline-flex items-center text-muted-foreground hover:text-foreground">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Home
+          </Link>
 
-      <div className="container mx-auto px-6 py-20">
-  <div className="max-w-4xl mx-auto">
-    {/* Hero Section */}
-    <div className="text-center mb-16">
-      <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-        Privacy Policy
-      </h1>
-      <p className="text-lg text-gray-600">Effective Date: June 4, 2025</p>
-      <p className="text-lg text-gray-600">Last Updated: June 4, 2025</p>
-    </div>
+          <div className="text-center pt-8">
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="text-4xl md:text-6xl font-bold mb-10"
+            >
+              Privacy Policy
+            </motion.h1>
 
-    {/* Content */}
-     {/* Content */}
-    <div className="prose prose-neutral dark:prose-invert max-w-none">
-      <section className="mb-8">
-        <p className="italic bg-gray-50 dark:bg-gray-800 p-4 rounded-md text-sm">
-          This Privacy Policy applies to the website <strong>Medici.ac</strong> operated by <strong>Miruvor LLC</strong>. The website currently consists of an interest-capture form for prospective students and donors, plus basic web-traffic analytics. No financial transactions are processed through the Site at this time.
-        </p>
-      </section>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="prose prose-neutral dark:prose-invert max-w-4xl mx-auto text-left"
+            >
+              <div className="text-center mb-8">
+                <p className="text-lg font-semibold">MEDICI.AC PRIVACY POLICY</p>
+                <p className="text-base"><strong>Effective Date:</strong> June 4, 2025</p>
+                <p className="text-base"><strong>Last Updated:</strong> June 4, 2025</p>
+              </div>
 
-      <h2 className="text-2xl font-bold mt-8 mb-4 border-b pb-2">1. DEFINITIONS AND INTERPRETATION</h2>
+              <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg mb-6">
+                <p className="text-sm italic mb-0">
+                  This Privacy Policy applies to the website <strong>Medici.ac</strong> operated by <strong>Miruvor LLC</strong> and is effective as of June 4, 2025. The website currently consists of an interest-capture form for prospective students and donors, plus basic web-traffic analytics. No financial transactions are processed through the Site at this time.
+                </p>
+              </div>
+
+              <h2 className="text-2xl font-bold mt-8 mb-4 border-b pb-2">1. DEFINITIONS AND INTERPRETATION</h2>
               
               <h3 className="text-lg font-semibold mt-4 mb-2">1.1 Definitions</h3>
               <p>In this Privacy Policy, unless the context otherwise requires:</p>
@@ -50,8 +61,7 @@ export default function PrivacyPage() {
               
               <p><strong>Data Controller Contact Information:</strong></p>
               <ul className="list-none ml-4">
-                <li>Email: contact@medici.ac
-</li>
+                <li>Email: rd@stableresearch.xyz</li>
                 <li>Entity: Miruvor LLC</li>
                 <li>Jurisdiction: United States</li>
               </ul>
@@ -245,8 +255,7 @@ export default function PrivacyPage() {
               </ul>
 
               <h3 className="text-lg font-semibold mt-4 mb-2">9.2 Exercising Your Rights</h3>
-              <p>To exercise any of these rights, please contact us at: <strong>contact@medici.ac
-</strong></p>
+              <p>To exercise any of these rights, please contact us at: <strong>rd@stableresearch.xyz</strong></p>
               <p>We will respond to verified requests within the timeframes required by applicable law (typically 30 days for GDPR requests, 45 days for CCPA requests).</p>
 
               <h2 className="text-2xl font-bold mt-8 mb-4 border-b pb-2">10. INTERNATIONAL DATA TRANSFERS</h2>
@@ -269,8 +278,7 @@ export default function PrivacyPage() {
               <p>The Site is not directed to, intended for, or designed to attract children under the age of sixteen (16) years. We do not knowingly collect personal information from children under 16.</p>
 
               <h3 className="text-lg font-semibold mt-4 mb-2">11.2 Parental Notice and Deletion</h3>
-              <p>If we become aware that we have inadvertently collected personal information from a child under 16, we will take immediate steps to delete such information from our systems. Parents or guardians who believe their child has provided personal data should contact us immediately at contact@medici.ac
-.</p>
+              <p>If we become aware that we have inadvertently collected personal information from a child under 16, we will take immediate steps to delete such information from our systems. Parents or guardians who believe their child has provided personal data should contact us immediately at rd@stableresearch.xyz.</p>
 
               <h2 className="text-2xl font-bold mt-8 mb-4 border-b pb-2">12. POLICY UPDATES AND AMENDMENTS</h2>
               
@@ -293,8 +301,7 @@ export default function PrivacyPage() {
               <h3 className="text-lg font-semibold mt-4 mb-2">13.1 Primary Contact</h3>
               <p>For all privacy-related questions, concerns, or requests, please contact:</p>
               <ul className="list-none ml-4 space-y-1">
-                <li><strong>Email:</strong> contact@medici.ac
-</li>
+                <li><strong>Email:</strong> rd@stableresearch.xyz</li>
                 <li><strong>Response Time:</strong> We aim to respond within 5 business days</li>
                 <li><strong>Data Controller:</strong> Miruvor LLC</li>
               </ul>
@@ -316,58 +323,26 @@ export default function PrivacyPage() {
               <h3 className="text-lg font-semibold mt-4 mb-2">14.2 Governing Law</h3>
               <p>This Privacy Policy shall be governed by and construed in accordance with the laws of the United States and the state in which Miruvor LLC is organized, without regard to conflict of law principles.</p>
 
+              <div className="border-t-2 border-gray-300 dark:border-gray-600 pt-6 mt-8">
+                <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                  <p className="text-center font-semibold text-blue-800 dark:text-blue-200 mb-2">
+                    CONSENT TO DATA PROCESSING
+                  </p>
+                  <p className="text-sm text-center text-blue-700 dark:text-blue-300 italic">
+                    By submitting any form on this website, you expressly consent to Medici.ac storing your submitted information in Supabase and contacting you regarding the upcoming platform launch in accordance with this Privacy Policy.
+                  </p>
+                </div>
+              </div>
 
- 
-
-      <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mt-6">
-        <p className="text-center font-semibold text-blue-800 dark:text-blue-200 mb-2">
-          Consent to Data Processing
-        </p>
-        <p className="text-sm text-center text-blue-700 dark:text-blue-300 italic">
-          By submitting any form on this website, you expressly consent to Medici.ac storing your submitted information in Supabase and contacting you regarding the platform launch.
-        </p>
-      </div>
-
-      <div className="text-center mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-        <p className="text-xs text-gray-500 dark:text-gray-400">
-          Document Version: 1.0 | Last Updated: June 4, 2025 | Next Review: December 4, 2025
-        </p>
-      </div>
-    </div>
-
-
-
-          {/* CTA Section */}
-          <div className="mt-20 text-center">
-            <Card className="bg-gray-50 border-gray-200">
-              <CardContent className="p-12">
-                <h2 className="text-3xl font-light text-gray-900 mb-4">Questions about our privacy practices?</h2>
-                <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
-                  Our team is here to help you understand how we protect your information and respect your privacy.
+              <div className="text-center mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Document Version: 1.0 | Last Updated: June 4, 2025 | Next Review: December 4, 2025
                 </p>
-<a
-  href="https://x.com/Medici_ac"
-  target="_blank"
-  rel="noopener noreferrer"
->
-  <Button
-    size="lg"
-    className="rounded-full bg-blue-600 hover:bg-blue-700 text-white px-8 py-6 text-lg font-medium"
-  >
-    Contact Support
-    <ArrowRight className="ml-2 h-5 w-5" />
-  </Button>
-</a>
-
-              </CardContent>
-            </Card>
+              </div>
+            </motion.div>
           </div>
         </div>
       </div>
-
-
-      {/* Footer */}
-      <Footer />
-    </div>
+    </Layout>
   )
 }

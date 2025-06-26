@@ -9,7 +9,7 @@ export function Header() {
       <div className="container mx-auto px-4 h-20 flex items-center justify-between">
         <Link href="/" className="flex items-center">
           <Image
-            src="/logowithtext.svg"
+            src="/images/medici-logo.svg"
             alt="Medici"
             width={240}
             height={64}
@@ -18,12 +18,38 @@ export function Header() {
           />
         </Link>
 
-        <div className="flex items-center space-x-4">
-          <Link href="/student">
-            <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium px-4 sm:px-6 shadow-md hover:shadow-lg transition-all duration-300">
-              I am a Student
+        <div className="flex items-center ml-auto gap-2">
+          <nav className="flex items-center gap-2">
+            <Link
+              href="/about"
+              className="nav-animated-link text-muted-foreground hover:text-foreground transition-colors font-medium px-3 py-2 rounded-md"
+            >
+              About
+            </Link>
+            <Link
+              href="/#how-it-works"
+              className="nav-animated-link text-muted-foreground hover:text-foreground transition-colors font-medium px-3 py-2 rounded-md"
+            >
+              How It Works
+            </Link>
+            <Link
+              href="/#faq"
+              className="nav-animated-link text-muted-foreground hover:text-foreground transition-colors font-medium px-3 py-2 rounded-md"
+            >
+              FAQ
+            </Link>
+            <Link
+              href="/privacy"
+              className="nav-animated-link text-muted-foreground hover:text-foreground transition-colors font-medium px-3 py-2 rounded-md"
+            >
+              Privacy Policy
+            </Link>
+            <Button asChild variant="outline" className="rounded-full border-border font-medium px-5 py-2 ml-2">
+              <a href="mailto:contact@medici.ac" target="_blank" rel="noopener noreferrer" className="flex items-center">
+                Contact Us
+              </a>
             </Button>
-          </Link>
+          </nav>
           <ThemeToggle />
         </div>
       </div>
